@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Insight Agent Architecture | Vault RHEL 9</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090b;--bg2:#0d1014;--bg3:#12161c;--bg4:#181d26;
+  --border:#1e2733;--border2:#2a3545;--border3:#384658;
+  --text:#c8d6e5;--text2:#7f92a6;--text3:#4d6278;
+  --green:#00e676;--green2:#00c853;--green3:#00a844;
+  --red:#ff5252;--amber:#ffab40;--blue:#448aff;--cyan:#18ffff;
+  --purple:#b388ff;--teal:#64ffda;--orange:#ff9100;--pink:#ff80ab;
+  --white:#e8eef4;
+}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{font-family:'Outfit',sans-serif;color:var(--text);line-height:1.65;overflow-x:hidden}
+
+/* Grain */
+body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.35;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E")}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:4rem 2rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;right:-20%;width:70%;height:100%;
+  background:radial-gradient(ellipse at 60% 40%,rgba(0,230,118,.04),transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border2) 20%,var(--border2) 80%,transparent)}
+.hero-inner{max-width:1280px;margin:0 auto;width:100%}
+.hero-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.2em;color:var(--green);font-weight:600;display:flex;align-items:center;gap:.75rem;margin-bottom:2rem;animation:slideUp .6s ease both}
+.hero-eyebrow::before{content:'';width:32px;height:1px;background:var(--green)}
+.hero h1{font-family:'Literata',serif;font-size:clamp(2.4rem,5.5vw,4.8rem);line-height:1.08;color:var(--white);font-weight:700;max-width:800px;animation:slideUp .6s .1s ease both}
+.hero h1 .em{color:var(--green);font-style:italic;font-weight:400}
+.hero .sub{font-size:1.05rem;color:var(--text2);max-width:580px;margin-top:1.5rem;font-weight:300;animation:slideUp .6s .2s ease both}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.nav-bar{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:2.5rem;animation:slideUp .6s .35s ease both}
+.nav-bar a{font-family:'IBM Plex Mono',monospace;font-size:.65rem;padding:.4rem .9rem;border:1px solid var(--border);border-radius:6px;color:var(--text3);text-decoration:none;transition:.25s;text-transform:uppercase;letter-spacing:.08em;font-weight:500}
+.nav-bar a:hover{color:var(--green);border-color:var(--green);background:rgba(0,230,118,.04)}
+
+/* ── SECTIONS ── */
+section{padding:5rem 2rem;position:relative}
+.wrap{max-width:1280px;margin:0 auto}
+.sec-num{font-family:'IBM Plex Mono',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.2em;color:var(--green);font-weight:700;display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem}
+.sec-num::before{content:'';width:20px;height:1px;background:var(--green)}
+.sec-title{font-family:'Literata',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);color:var(--white);font-weight:700;line-height:1.12;margin-bottom:.5rem}
+.sec-desc{color:var(--text2);max-width:640px;font-size:.92rem;margin-bottom:2.5rem;font-weight:300}
+
+/* ── DIAGRAM CONTAINER ── */
+.dia{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:2rem;position:relative;overflow-x:auto;margin-bottom:2.5rem}
+.dia::before{content:'';position:absolute;inset:0;border-radius:14px;background:radial-gradient(ellipse at 50% 0%,rgba(0,230,118,.02),transparent 55%);pointer-events:none}
+.dia-label{font-family:'IBM Plex Mono',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text3);margin-bottom:1.5rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+
+/* ── ZONE / BOX ── */
+.zone{border:1px solid var(--border);border-radius:10px;padding:1.25rem;position:relative;background:var(--bg3)}
+.zone-tag{position:absolute;top:-.5rem;left:.75rem;font-family:'IBM Plex Mono',monospace;font-size:.55rem;text-transform:uppercase;letter-spacing:.12em;font-weight:700;padding:.12rem .55rem;border-radius:4px}
+.zone-tag.g{background:var(--green);color:var(--bg)}
+.zone-tag.r{background:var(--red);color:#fff}
+.zone-tag.b{background:var(--blue);color:#fff}
+.zone-tag.a{background:var(--amber);color:var(--bg)}
+.zone-tag.c{background:var(--cyan);color:var(--bg)}
+.zone-tag.p{background:var(--purple);color:var(--bg)}
+.zone-tag.t{background:var(--teal);color:var(--bg)}
+.zone-tag.o{background:var(--orange);color:var(--bg)}
+
+.row{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.6rem}
+.box{flex:1;min-width:130px;padding:.75rem .85rem;border-radius:7px;border:1px solid var(--border);background:var(--bg);font-size:.72rem;transition:.2s}
+.box:hover{border-color:var(--border2)}
+.box .bt{font-weight:700;color:var(--white);font-size:.75rem;margin-bottom:.2rem}
+.box .bd{color:var(--text3);font-size:.65rem;line-height:1.45}
+.box .bp{font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:var(--green);margin-top:.3rem;display:inline-block;padding:.1rem .35rem;background:rgba(0,230,118,.06);border-radius:3px}
+.box.hl{border-color:var(--green);box-shadow:0 0 24px rgba(0,230,118,.06)}
+
+/* ── FLOW ARROWS ── */
+.flow{display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.35rem 0;font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--text3);letter-spacing:.03em}
+.flow.v{flex-direction:column}
+.flow .ar{width:36px;height:1px;background:var(--border2);position:relative}
+.flow .ar::after{content:'';position:absolute;right:-1px;top:-2.5px;border:2.5px solid transparent;border-left:4px solid var(--border2)}
+.flow.v .ar{width:1px;height:24px}
+.flow.v .ar::after{right:auto;bottom:-1px;top:auto;left:-2.5px;border:2.5px solid transparent;border-top:4px solid var(--border2);border-left:2.5px solid transparent}
+.flow.green .ar{background:var(--green)}.flow.green .ar::after{border-left-color:var(--green)}
+.flow.green.v .ar{background:var(--green)}.flow.green.v .ar::after{border-top-color:var(--green);border-left-color:transparent}
+
+/* ── CARDS ── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.75rem;margin:1.5rem 0}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.1rem;position:relative;overflow:hidden;transition:.25s}
+.card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.card.daily::before{background:var(--red)}.card.weekly::before{background:var(--amber)}.card.cont::before{background:var(--green)}.card.h6::before{background:var(--cyan)}.card.h24::before{background:var(--blue)}.card.h15::before{background:var(--teal)}
+.card .badge{font-family:'IBM Plex Mono',monospace;font-size:.55rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding:.15rem .4rem;border-radius:3px;display:inline-block;margin-bottom:.6rem}
+.card.cont .badge{background:rgba(0,230,118,.1);color:var(--green)}
+.card.h6 .badge{background:rgba(24,255,255,.1);color:var(--cyan)}
+.card.h15 .badge{background:rgba(100,255,218,.1);color:var(--teal)}
+.card.h24 .badge{background:rgba(68,138,255,.1);color:var(--blue)}
+.card.daily .badge{background:rgba(255,82,82,.1);color:var(--red)}
+.card.weekly .badge{background:rgba(255,171,64,.1);color:var(--amber)}
+.card h4{color:var(--white);font-size:.82rem;margin-bottom:.25rem;font-weight:600}
+.card p{color:var(--text3);font-size:.68rem;line-height:1.5}
+.card .ism{font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:var(--teal);margin-top:.4rem}
+
+/* ── COMPARISON ── */
+.compare{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;margin:1.5rem 0;align-items:start}
+@media(max-width:800px){.compare{grid-template-columns:1fr;gap:1rem}.compare .vs{display:none}}
+.col-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
+.col-box h3{font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.col-box h3 .t{padding:.12rem .45rem;border-radius:4px;font-size:.55rem;text-transform:uppercase;letter-spacing:.08em}
+.col-box.agent h3 .t{background:rgba(0,230,118,.12);color:var(--green)}
+.col-box.engine h3 .t{background:rgba(255,171,64,.12);color:var(--amber)}
+.col-box ul{list-style:none}
+.col-box li{padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.72rem;color:var(--text2);display:flex;align-items:flex-start;gap:.45rem}
+.col-box li:last-child{border-bottom:none}
+.col-box li::before{content:'\2713';color:var(--green);font-weight:700;flex-shrink:0;font-size:.7rem;margin-top:1px}
+.col-box.engine li::before{color:var(--amber)}
+.col-box li.x::before{content:'\2717';color:var(--red)}
+.vs{display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--text3);font-weight:700}
+
+/* ── LAYERS ── */
+.layers{display:flex;flex-direction:column;gap:0;margin:1.5rem 0}
+.layer{padding:1rem 1.25rem;border:1px solid var(--border);display:grid;grid-template-columns:160px 1fr;gap:1.25rem;align-items:start}
+.layer:first-child{border-radius:10px 10px 0 0}.layer:last-child{border-radius:0 0 10px 10px}.layer+.layer{border-top:none}
+.layer .ll{font-family:'IBM Plex Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding-top:.15rem}
+.layer:nth-child(1){background:rgba(0,230,118,.03)}.layer:nth-child(1) .ll{color:var(--green)}
+.layer:nth-child(2){background:rgba(24,255,255,.03)}.layer:nth-child(2) .ll{color:var(--cyan)}
+.layer:nth-child(3){background:rgba(68,138,255,.03)}.layer:nth-child(3) .ll{color:var(--blue)}
+.layer:nth-child(4){background:rgba(255,171,64,.03)}.layer:nth-child(4) .ll{color:var(--amber)}
+.layer:nth-child(5){background:rgba(179,136,255,.03)}.layer:nth-child(5) .ll{color:var(--purple)}
+.layer .lc{display:flex;flex-wrap:wrap;gap:.3rem}
+.layer .pkg{font-family:'IBM Plex Mono',monospace;font-size:.56rem;padding:.15rem .4rem;border-radius:3px;border:1px solid var(--border);background:var(--bg);color:var(--text2)}
+
+/* ── TIMELINE ── */
+.timeline{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:1.5rem 0;border-radius:10px;overflow:hidden}
+@media(max-width:900px){.timeline{grid-template-columns:1fr}}
+.tday{background:var(--bg2);padding:.85rem .65rem;min-height:120px}
+.tday .dn{font-family:'IBM Plex Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:.6rem;font-weight:700}
+.tday .sb{padding:.3rem .4rem;border-radius:4px;font-size:.55rem;margin-bottom:.3rem;font-family:'IBM Plex Mono',monospace;border-left:2px solid}
+.sb.agent{background:rgba(0,230,118,.06);border-color:var(--green);color:var(--green)}
+.sb.tls{background:rgba(255,82,82,.06);border-color:var(--red);color:var(--red)}
+.sb.comp{background:rgba(255,171,64,.06);border-color:var(--amber);color:var(--amber)}
+.sb.cis{background:rgba(68,138,255,.06);border-color:var(--blue);color:var(--blue)}
+.sb.off{background:rgba(255,255,255,.02);border-color:var(--border);color:var(--text3)}
+
+/* ── PIPELINE ── */
+.pipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0;margin:1.5rem 0}
+.pipe-step{padding:1.1rem;border:1px solid var(--border);background:var(--bg2);position:relative}
+.pipe-step:first-child{border-radius:10px 0 0 10px}
+.pipe-step:last-child{border-radius:0 10px 10px 0}
+.pipe-step+.pipe-step{border-left:none}
+@media(max-width:900px){.pipe{grid-template-columns:1fr}.pipe-step{border-radius:0!important}.pipe-step+.pipe-step{border-left:1px solid var(--border);border-top:none}}
+.pipe-step .sn{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--border2);margin-bottom:.4rem}
+.pipe-step h4{font-size:.75rem;color:var(--white);margin-bottom:.2rem;font-weight:600}
+.pipe-step p{font-size:.62rem;color:var(--text3);line-height:1.45}
+.pipe-step .tm{font-family:'IBM Plex Mono',monospace;font-size:.5rem;color:var(--cyan);margin-top:.35rem}
+
+/* ── SLA TABLE ── */
+.sla-t{width:100%;border-collapse:separate;border-spacing:0;margin:1.5rem 0;font-size:.7rem}
+.sla-t th{font-family:'IBM Plex Mono',monospace;font-size:.55rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:.65rem .85rem;text-align:left;border-bottom:1px solid var(--border2);font-weight:700;background:var(--bg3)}
+.sla-t th:first-child{border-radius:8px 0 0 0}.sla-t th:last-child{border-radius:0 8px 0 0}
+.sla-t td{padding:.55rem .85rem;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.sla-t tr:last-child td{border-bottom:none}
+.sla-t tr:hover td{background:rgba(0,230,118,.015)}
+.sla-b{font-family:'IBM Plex Mono',monospace;font-size:.55rem;font-weight:700;padding:.12rem .35rem;border-radius:3px;display:inline-block}
+.sla-b.cr{background:rgba(255,82,82,.1);color:var(--red)}
+.sla-b.hi{background:rgba(255,171,64,.1);color:var(--amber)}
+.sla-b.md{background:rgba(68,138,255,.1);color:var(--blue)}
+
+/* ── CALLOUT ── */
+.callout{border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;background:var(--bg2);margin:1.5rem 0;display:flex;gap:1.5rem;flex-wrap:wrap}
+.callout .cl{flex:1;min-width:200px}
+.callout .cl-label{font-family:'IBM Plex Mono',monospace;font-size:.55rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:.35rem}
+.callout .cl-body{font-size:.78rem}
+
+/* ── FOOTER ── */
+.footer{text-align:center;padding:2.5rem 2rem;color:var(--text3);font-size:.62rem;border-top:1px solid var(--border);font-family:'IBM Plex Mono',monospace;letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Architecture Design Document</div>
+    <h1>Rapid7 <span class="em">Insight Agent</span><br>Vulnerability Scanning for Vault on RHEL 9</h1>
+    <p class="sub">Agent-centric scanning architecture delivering continuous vulnerability assessment aligned to ASD Essential Eight Maturity Level 1 &amp; 2 — replacing network-based scans with zero-credential, cloud-assessed telemetry.</p>
+    <nav class="nav-bar">
+      <a href="#topology">Deployment Topology</a>
+      <a href="#data-flow">Agent Data Flow</a>
+      <a href="#collection">Collection Model</a>
+      <a href="#pipeline">Assessment Pipeline</a>
+      <a href="#scope">Scanning Scope</a>
+      <a href="#comparison">Agent vs Scan Engine</a>
+      <a href="#e8-map">E8 Compliance</a>
+      <a href="#schedule">Scan Schedule</a>
+      <a href="#gaps">Supplementary</a>
+      <a href="#sla">Remediation SLA</a>
+      <a href="#hardening">Security Hardening</a>
+      <a href="#recovery">Failure Recovery</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══ 1. DEPLOYMENT TOPOLOGY ═══ -->
+<section id="topology">
+<div class="wrap">
+  <div class="sec-num">01 — Deployment Topology</div>
+  <h2 class="sec-title">Agent Deployment Architecture</h2>
+  <p class="sec-desc">Insight Agent installed on every Vault node — active, standby, and DR. All communication is outbound-only over TLS 1.2. No inbound ports, no SSH credentials, no scan windows.</p>
+
+  <div class="dia">
+    <div class="dia-label">Insight Agent Deployment Topology — All Environments</div>
+
+    <!-- Rapid7 Cloud -->
+    <div class="zone" style="border-color:var(--cyan)">
+      <span class="zone-tag c">Rapid7 Cloud Platform</span>
+      <div class="row" style="margin-top:.75rem">
+        <div class="box"><div class="bt">Insight Platform</div><div class="bd">Receives agent telemetry. Performs vulnerability assessment against continuously-updated vuln DB (NVD, RHSA, HCSEC, Go DB).</div><div class="bp">Cloud-side assessment</div></div>
+        <div class="box"><div class="bt">InsightVM Console</div><div class="bd">Syncs agent findings every 2h. Dashboards, compliance reports, remediation projects, Jira integration.</div><div class="bp">Configurable 1–12h sync</div></div>
+        <div class="box"><div class="bt">InsightIDR</div><div class="bd">Real-time process, file, network events from agent InsightIDR component. UEBA + 10 detection rules (VDR-001→010).</div><div class="bp">Real-time SIEM</div></div>
+      </div>
+    </div>
+
+    <div class="flow v green"><div class="ar"></div><span>TCP/443 TLS 1.2 — Outbound only — No inbound ports</span></div>
+
+    <!-- Optional Collector -->
+    <div class="zone" style="border-color:var(--amber)">
+      <span class="zone-tag a">Security VLAN (Optional)</span>
+      <div class="row" style="margin-top:.75rem">
+        <div class="box"><div class="bt">Rapid7 Collector</div><div class="bd">On-prem proxy for agent traffic if direct egress unavailable. Agent → Collector → Cloud. Eliminates per-node internet access.</div><div class="bp">TCP/443 local</div></div>
+        <div class="box"><div class="bt">InsightVM Scan Engine</div><div class="bd">Supplementary only: TLS handshake checks on ports 8200/8201 and port enumeration. Skips all agent-covered checks.</div><div class="bp">TLS + Port scans only</div></div>
+      </div>
+    </div>
+
+    <div class="flow v"><div class="ar"></div><span>Agent telemetry (via Collector) + Supplementary scan traffic</span></div>
+
+    <!-- Production -->
+    <div class="zone" style="border-color:var(--green)">
+      <span class="zone-tag g">Production Vault Cluster</span>
+      <div class="row" style="margin-top:.75rem">
+        <div class="box hl">
+          <div class="bt">🟢 Vault Active</div>
+          <div class="bd">RHEL 9.x · Vault 1.15+<br>Raft Leader · API listener<br><strong>Insight Agent: continuous</strong></div>
+          <div class="bp">:8200 :8201 :22</div>
+        </div>
+        <div class="box">
+          <div class="bt">🔵 Vault Standby #1</div>
+          <div class="bd">RHEL 9.x · Vault 1.15+<br>Raft Follower · API forwarding<br><strong>Insight Agent: continuous</strong></div>
+          <div class="bp">:8200 :8201 :22</div>
+        </div>
+        <div class="box">
+          <div class="bt">🔵 Vault Standby #2</div>
+          <div class="bd">RHEL 9.x · Vault 1.15+<br>Raft Follower · API forwarding<br><strong>Insight Agent: continuous</strong></div>
+          <div class="bp">:8200 :8201 :22</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow v"><div class="ar"></div><span>Raft replication / DR replication</span></div>
+
+    <!-- DR -->
+    <div class="zone" style="border-color:var(--purple)">
+      <span class="zone-tag p">DR / Non-Internet-Facing</span>
+      <div class="row" style="margin-top:.75rem">
+        <div class="box"><div class="bt">🟣 Vault DR Primary</div><div class="bd">RHEL 9.x · Non-internet-facing<br><strong>Insight Agent: continuous</strong><br>Routes via DR Collector</div><div class="bp">ISM-1702 fortnightly (exceeded)</div></div>
+        <div class="box"><div class="bt">🟣 Vault DR Secondary</div><div class="bd">RHEL 9.x · Non-internet-facing<br><strong>Insight Agent: continuous</strong><br>Routes via DR Collector</div><div class="bp">ISM-1702 fortnightly (exceeded)</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ 2. AGENT DATA FLOW ═══ -->
+<section id="data-flow" style="background:var(--bg2)">
+<div class="wrap">
+  <div class="sec-num">02 — Data Flow Architecture</div>
+  <h2 class="sec-title">Agent-Centric Data Flow</h2>
+  <p class="sec-desc">The agent is a <em>data collector</em>, not a scanner. Assessment happens cloud-side on the Rapid7 platform — the Vault node only bears the lightweight cost of data collection.</p>
+
+  <div class="dia" style="background:var(--bg)">
+    <div class="dia-label">Three Data Channels — Vulnerability + Policy + Threat Detection</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;min-width:880px">
+
+      <!-- Channel 1: Vulnerability -->
+      <div>
+        <div class="zone" style="border-color:var(--green);min-height:0">
+          <span class="zone-tag g">Vulnerability Channel</span>
+          <div style="margin-top:.75rem">
+            <div class="box" style="margin-bottom:.4rem"><div class="bt">Agent Collects</div><div class="bd">Full RPM inventory (rpm -qa)<br>Vault binary version<br>Go runtime version<br>System info, user accounts</div><div class="bp">Every 6 hours</div></div>
+            <div class="flow v green"><div class="ar"></div></div>
+            <div class="box" style="margin-bottom:.4rem"><div class="bt">TLS 1.2 Transport</div><div class="bd">JSON payload ~50–200 KB<br>TLS client cert auth<br>Outbound TCP/443 only</div></div>
+            <div class="flow v green"><div class="ar"></div></div>
+            <div class="box"><div class="bt">Cloud Assessment</div><div class="bd">RPM versions matched against vuln DB<br>Active Risk scoring<br>CVE findings generated</div><div class="bp">ISM-1698 1699 1700 1701 1702</div></div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:.5rem;font-size:.58rem;color:var(--green);font-family:'IBM Plex Mono',monospace">4× DAILY · EXCEEDS ALL E8 FREQUENCIES</div>
+      </div>
+
+      <!-- Channel 2: Policy -->
+      <div>
+        <div class="zone" style="border-color:var(--blue);min-height:0">
+          <span class="zone-tag b">Policy Channel</span>
+          <div style="margin-top:.75rem">
+            <div class="box" style="margin-bottom:.4rem"><div class="bt">Endpoint Broker Collects</div><div class="bd">CIS benchmark config data<br>sysctl params, sshd_config<br>SELinux status, firewall rules<br>File permissions, user accounts</div><div class="bp">Every 24 hours</div></div>
+            <div class="flow v"><div class="ar"></div></div>
+            <div class="box" style="margin-bottom:.4rem"><div class="bt">InsightVM Request</div><div class="bd">Console sends collection request<br>to Endpoint Broker on agent<br>Broker collects and returns</div></div>
+            <div class="flow v"><div class="ar"></div></div>
+            <div class="box"><div class="bt">Policy Assessment</div><div class="bd">CIS RHEL 9 L1/L2<br>CIS Vault Benchmark<br>Pass/fail per rule</div><div class="bp">Compliance scoring</div></div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:.5rem;font-size:.58rem;color:var(--blue);font-family:'IBM Plex Mono',monospace">DAILY CIS BENCHMARK · NO SSH NEEDED</div>
+      </div>
+
+      <!-- Channel 3: EDR -->
+      <div>
+        <div class="zone" style="border-color:var(--red);min-height:0">
+          <span class="zone-tag r">Threat Detection Channel</span>
+          <div style="margin-top:.75rem">
+            <div class="box" style="margin-bottom:.4rem"><div class="bt">InsightIDR Component</div><div class="bd">PROCESS_START/STOP events<br>FILE_MODIFICATION (FIM)<br>NETWORK_CONNECTION<br>USER_LOGIN events</div><div class="bp">Real-time (continuous)</div></div>
+            <div class="flow v"><div class="ar"></div></div>
+            <div class="box" style="margin-bottom:.4rem"><div class="bt">auditd Integration</div><div class="bd">auditd compatibility mode<br>Syscall monitoring<br>Privilege escalation detection</div></div>
+            <div class="flow v"><div class="ar"></div></div>
+            <div class="box"><div class="bt">InsightIDR SIEM</div><div class="bd">10 Vault detection rules<br>UEBA behavioural baselines<br>SOAR playbook triggers</div><div class="bp">MITRE ATT&CK mapped</div></div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:.5rem;font-size:.58rem;color:var(--red);font-family:'IBM Plex Mono',monospace">REAL-TIME EDR · PROCESS + FILE + NET</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ 3. COLLECTION MODEL ═══ -->
+<section id="collection">
+<div class="wrap">
+  <div class="sec-num">03 — Collection Intervals</div>
+  <h2 class="sec-title">Agent Data Collection Model</h2>
+  <p class="sec-desc">Eight data categories collected at different intervals. All assessment happens cloud-side — the Vault node only bears lightweight collection cost.</p>
+
+  <div class="card-grid">
+    <div class="card h6"><div class="badge">Every 6 Hours</div><h4>RPM Package Inventory</h4><p>Full rpm -qa equivalent. Every installed package: name, version, arch, install date. Primary data for vulnerability matching.</p><div class="ism">ISM-1698 · 1699 · 1700 · 1701 · 1702</div></div>
+    <div class="card h6"><div class="badge">Every 6 Hours</div><h4>System Information</h4><p>RHEL version, kernel version, hostname, IP addresses, MAC address. Asset inventory and OS support status.</p><div class="ism">ISM-1807 · Asset Discovery</div></div>
+    <div class="card h6"><div class="badge">Every 6 Hours</div><h4>User Accounts</h4><p>/etc/passwd metadata, last login, shell, group membership. User account hygiene and privileged access review.</p><div class="ism">Privileged Access · ML2</div></div>
+    <div class="card h15"><div class="badge">Every 15 Min</div><h4>Running Processes</h4><p>/proc enumeration: process name, PID, PPID, user, command line, working directory. Detects unauthorized binaries.</p><div class="ism">Application Control Verification</div></div>
+    <div class="card h15"><div class="badge">Every 15 Min</div><h4>Network Connections</h4><p>Socket enumeration: local/remote address, port, protocol, state, PID. Verifies expected ports (8200, 8201, 22).</p><div class="ism">Port Exposure Monitoring</div></div>
+    <div class="card h24"><div class="badge">Every 24 Hours</div><h4>CIS Policy Configuration</h4><p>Endpoint Broker collects sysctl, sshd_config, SELinux status, firewall rules, file permissions for CIS benchmark assessment.</p><div class="ism">CIS RHEL 9 L1/L2 · CIS Vault</div></div>
+    <div class="card cont"><div class="badge">Continuous</div><h4>Audit Events (InsightIDR)</h4><p>Process start/stop, file create/write/delete, network connections, user logins via auditd integration. Real-time threat detection.</p><div class="ism">MITRE ATT&CK Detection Rules</div></div>
+    <div class="card cont"><div class="badge">Periodic</div><h4>File System Metadata</h4><p>File hashes, permissions, ownership for monitored paths. FIM for Vault binary, config files, TLS certificates.</p><div class="ism">File Integrity Monitoring</div></div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ 4. ASSESSMENT PIPELINE ═══ -->
+<section id="pipeline" style="background:var(--bg2)">
+<div class="wrap">
+  <div class="sec-num">04 — Assessment Pipeline</div>
+  <h2 class="sec-title">End-to-End Vulnerability Assessment</h2>
+  <p class="sec-desc">Six-stage pipeline from on-node collection to validated remediation. Assessment is cloud-side — zero computation on Vault nodes.</p>
+
+  <div class="pipe">
+    <div class="pipe-step" style="border-left:2px solid var(--green)">
+      <div class="sn">01</div><h4>Collection</h4>
+      <p>Agent collects RPM inventory, process list, network connections, system info from Vault RHEL 9 node</p>
+      <div class="tm">Every 6h / 15m / 24h</div>
+    </div>
+    <div class="pipe-step" style="border-left:2px solid var(--cyan)">
+      <div class="sn">02</div><h4>Transport</h4>
+      <p>JSON payload encrypted via TLS 1.2, authenticated with org-specific client certificate, TCP/443 outbound</p>
+      <div class="tm">~50–200 KB per cycle</div>
+    </div>
+    <div class="pipe-step" style="border-left:2px solid var(--blue)">
+      <div class="sn">03</div><h4>Assessment</h4>
+      <p>Rapid7 cloud matches RPM versions against continuously-updated vuln DB (NVD + RHSA + HCSEC + Go DB)</p>
+      <div class="tm">Minutes after receipt</div>
+    </div>
+    <div class="pipe-step" style="border-left:2px solid var(--purple)">
+      <div class="sn">04</div><h4>Sync</h4>
+      <p>InsightVM Console pulls agent findings from Platform. Risk scored with Active Risk model (CVSS + exploitability)</p>
+      <div class="tm">Every 2h (configurable 1–12h)</div>
+    </div>
+    <div class="pipe-step" style="border-left:2px solid var(--amber)">
+      <div class="sn">05</div><h4>Remediation</h4>
+      <p>Jira ticket auto-created per finding. Platform Eng patches via Ansible. E8 SLA clock tracked in InsightVM</p>
+      <div class="tm">48h / 2 weeks / 1 month SLA</div>
+    </div>
+    <div class="pipe-step" style="border-left:2px solid var(--teal)">
+      <div class="sn">06</div><h4>Validation</h4>
+      <p>Agent re-collects RPM inventory within 6h. Cloud re-assesses. If CVE persists, Jira ticket reopened</p>
+      <div class="tm">Auto-validated within 6h</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ 5. SCANNING SCOPE ═══ -->
+<section id="scope">
+<div class="wrap">
+  <div class="sec-num">05 — Scanning Scope</div>
+  <h2 class="sec-title">Five-Layer Agent Coverage</h2>
+  <p class="sec-desc">Every component scanned via the agent's 6-hourly RPM inventory collection. All layers assessed 4× daily — exceeding every E8 frequency requirement.</p>
+
+  <div class="layers">
+    <div class="layer">
+      <div class="ll">Layer 1<br>RHEL 9 OS<br><span style="font-size:.5rem;opacity:.6">ISM-1701/1702</span></div>
+      <div class="lc">
+        <span class="pkg">kernel</span><span class="pkg">kernel-core</span><span class="pkg">kernel-modules</span><span class="pkg">glibc</span><span class="pkg">systemd</span><span class="pkg">systemd-libs</span><span class="pkg">openssl</span><span class="pkg">openssl-libs</span><span class="pkg">gnutls</span><span class="pkg">nss</span><span class="pkg">openssh-server</span><span class="pkg">openssh-clients</span><span class="pkg">chrony</span><span class="pkg">NetworkManager</span><span class="pkg">grub2</span><span class="pkg">dracut</span>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="ll">Layer 2<br>Vault App<br><span style="font-size:.5rem;opacity:.6">ISM-1698</span></div>
+      <div class="lc">
+        <span class="pkg">vault binary</span><span class="pkg">Go runtime (embedded)</span><span class="pkg">Vault plugins</span><span class="pkg">vault.hcl config</span><span class="pkg">HCSEC advisories</span><span class="pkg">Go vuln DB</span>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="ll">Layer 3<br>Security<br><span style="font-size:.5rem;opacity:.6">ISM-1699</span></div>
+      <div class="lc">
+        <span class="pkg">selinux-policy</span><span class="pkg">selinux-policy-targeted</span><span class="pkg">audit</span><span class="pkg">audit-libs</span><span class="pkg">firewalld</span><span class="pkg">rapid7-agent</span>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="ll">Layer 4<br>Other Apps<br><span style="font-size:.5rem;opacity:.6">ISM-1700 (ML2)</span></div>
+      <div class="lc">
+        <span class="pkg">python3</span><span class="pkg">curl</span><span class="pkg">libcurl</span><span class="pkg">jq</span><span class="pkg">sudo</span><span class="pkg">polkit</span><span class="pkg">dbus</span><span class="pkg">rsyslog</span><span class="pkg">logrotate</span><span class="pkg">bash</span><span class="pkg">coreutils</span><span class="pkg">tar</span><span class="pkg">lvm2</span><span class="pkg">xfsprogs</span><span class="pkg">podman</span><span class="pkg">consul</span><span class="pkg">node_exporter</span>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="ll">Layer 5<br>Hardening<br><span style="font-size:.5rem;opacity:.6">CIS Benchmark</span></div>
+      <div class="lc">
+        <span class="pkg">CIS RHEL 9 L1/L2</span><span class="pkg">CIS Vault Benchmark</span><span class="pkg">sysctl params</span><span class="pkg">SELinux enforcing</span><span class="pkg">firewalld zones</span><span class="pkg">systemd hardening</span><span class="pkg">File permissions</span><span class="pkg">SUID/SGID audit</span><span class="pkg">auditd rules</span><span class="pkg">User hygiene</span>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ 6. AGENT vs SCAN ENGINE ═══ -->
+<section id="comparison" style="background:var(--bg2)">
+<div class="wrap">
+  <div class="sec-num">06 — Architecture Decision</div>
+  <h2 class="sec-title">Insight Agent vs Scan Engine</h2>
+  <p class="sec-desc">Why agent-based scanning is the primary mechanism for Vault — and where the scan engine supplements.</p>
+
+  <div class="compare">
+    <div class="col-box agent">
+      <h3><span class="t">Primary</span> Insight Agent</h3>
+      <ul>
+        <li>RPM vulnerability assessment every 6 hours (cloud-side)</li>
+        <li>Process inventory every 15 minutes (continuous)</li>
+        <li>Network connections every 15 minutes (continuous)</li>
+        <li>CIS benchmark assessment every 24 hours (Endpoint Broker)</li>
+        <li>File integrity monitoring (continuous, hash-based)</li>
+        <li>Real-time EDR: process + file + network events</li>
+        <li>Zero credentials needed (TLS client cert only)</li>
+        <li>Minimal performance impact (collection only, no on-node assessment)</li>
+        <li>No inbound ports required (outbound-only TCP/443)</li>
+        <li>Works through Collector proxy for air-gapped environments</li>
+        <li class="x">Cannot perform external TLS handshake analysis</li>
+        <li class="x">Cannot validate port exposure from network perspective</li>
+        <li class="x">Cannot check HTTP security headers on Vault API</li>
+      </ul>
+    </div>
+    <div class="vs">VS</div>
+    <div class="col-box engine">
+      <h3><span class="t">Supplementary</span> Scan Engine</h3>
+      <ul>
+        <li>TLS config analysis on port 8200 (cipher suites, protocol, cert)</li>
+        <li>TLS config analysis on port 8201 (mTLS, internal CA)</li>
+        <li>Full port scan TCP/1–65535 (external perspective)</li>
+        <li>HTTP security headers check on Vault API</li>
+        <li>Custom CIS Vault Benchmark hardening checks</li>
+        <li class="x">Requires SSH credentials (vault-scanner service account)</li>
+        <li class="x">Scheduled scan windows only (daily/weekly)</li>
+        <li class="x">Consumes CPU/memory on target during scan</li>
+        <li class="x">Requires inbound TCP/22 and TCP/8200 firewall rules</li>
+        <li class="x">Scan engine compromise exposes SSH keys to all nodes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="cl"><div class="cl-label">Architecture Decision</div><div class="cl-body" style="color:var(--green)">Insight Agent is the <strong>primary</strong> scanning mechanism. Scan engine is <strong>supplementary</strong> only — configured with "Skip checks performed by Insight Agent" to avoid duplication.</div></div>
+    <div class="cl"><div class="cl-label">Credential Reduction</div><div class="cl-body" style="color:var(--cyan)">Agent model eliminates SSH scan credentials on Vault nodes. Scan engine SSH key is used <strong>only</strong> for weekly SSH config hardening check — not for vulnerability assessment.</div></div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ 7. E8 COMPLIANCE MAP ═══ -->
+<section id="e8-map">
+<div class="wrap">
+  <div class="sec-num">07 — Essential Eight Compliance</div>
+  <h2 class="sec-title">ISM Control Satisfaction via Insight Agent</h2>
+  <p class="sec-desc">Every E8 scanning ISM control mapped to the specific agent capability that satisfies it. Agent's 6-hourly collection exceeds all minimums.</p>
+
+  <table class="sla-t">
+    <thead><tr><th>ISM Control</th><th>E8 Requirement</th><th>Agent Capability</th><th>E8 Minimum</th><th>Agent Actual</th><th>ML1</th><th>ML2</th></tr></thead>
+    <tbody>
+      <tr><td style="font-family:'IBM Plex Mono',monospace;font-size:.62rem">ISM-1807</td><td>Automated asset discovery fortnightly</td><td>Agent self-registers, reports hostname/IP/OS/MAC every 6h</td><td>Fortnightly</td><td style="color:var(--green)">4× daily</td><td>✓</td><td>✓</td></tr>
+      <tr><td style="font-family:'IBM Plex Mono',monospace;font-size:.62rem">ISM-1808</td><td>Up-to-date vulnerability database</td><td>Cloud-side DB updated continuously (multiple times daily)</td><td>Before each scan</td><td style="color:var(--green)">Continuous</td><td>✓</td><td>✓</td></tr>
+      <tr><td style="font-family:'IBM Plex Mono',monospace;font-size:.62rem">ISM-1698</td><td>Daily scan of online services</td><td>Vault binary, Go runtime, OpenSSL assessed every 6h</td><td>Daily</td><td style="color:var(--green)">4× daily</td><td>✓</td><td>✓</td></tr>
+      <tr><td style="font-family:'IBM Plex Mono',monospace;font-size:.62rem">ISM-1699</td><td>Weekly scan of security products</td><td>SELinux, firewalld, auditd, agent RPMs assessed every 6h</td><td>Weekly</td><td style="color:var(--green)">4× daily</td><td>✓</td><td>✓</td></tr>
+      <tr><td style="font-family:'IBM Plex Mono',monospace;font-size:.62rem">ISM-1700</td><td>Fortnightly scan of other apps</td><td>ALL RPM packages assessed every 6h (Python, curl, sudo, etc.)</td><td>Fortnightly</td><td style="color:var(--green)">4× daily</td><td>—</td><td>✓</td></tr>
+      <tr><td style="font-family:'IBM Plex Mono',monospace;font-size:.62rem">ISM-1701</td><td>Daily scan of internet-facing OS</td><td>Kernel, glibc, systemd assessed every 6h on internet-facing nodes</td><td>Daily</td><td style="color:var(--green)">4× daily</td><td>✓</td><td>✓</td></tr>
+      <tr><td style="font-family:'IBM Plex Mono',monospace;font-size:.62rem">ISM-1702</td><td>Fortnightly scan of non-internet-facing OS</td><td>DR nodes assessed identically — every 6h</td><td>Fortnightly</td><td style="color:var(--green)">4× daily (56× exceed)</td><td>✓</td><td>✓</td></tr>
+      <tr><td style="font-family:'IBM Plex Mono',monospace;font-size:.62rem">ISM-1876</td><td>Critical patches within 48h</td><td>InsightVM SLA tracking + Jira + agent re-assessment validates patch</td><td>48 hours</td><td style="color:var(--green)">Validated in 6h</td><td>✓</td><td>✓</td></tr>
+      <tr><td style="font-family:'IBM Plex Mono',monospace;font-size:.62rem">ISM-1703</td><td>Unsupported software removed</td><td>Full RPM inventory compared against RHEL lifecycle DB</td><td>Continuous</td><td style="color:var(--green)">4× daily check</td><td>✓</td><td>✓</td></tr>
+    </tbody>
+  </table>
+</div>
+</section>
+
+<!-- ═══ 8. SCHEDULE ═══ -->
+<section id="schedule" style="background:var(--bg2)">
+<div class="wrap">
+  <div class="sec-num">08 — Weekly Scan Schedule</div>
+  <h2 class="sec-title">Combined Agent + Supplementary Schedule</h2>
+  <p class="sec-desc">Agent runs continuously 24/7. Supplementary scan engine runs only for TLS and port checks at defined windows.</p>
+
+  <div class="timeline">
+    <div class="tday"><div class="dn">Mon</div><div class="sb agent">24/7 Agent</div><div class="sb tls">03:00 TLS scan<br>Port 8200</div></div>
+    <div class="tday"><div class="dn">Tue</div><div class="sb agent">24/7 Agent</div><div class="sb tls">03:00 TLS scan<br>Port 8200</div></div>
+    <div class="tday"><div class="dn">Wed</div><div class="sb agent">24/7 Agent</div><div class="sb tls">03:00 TLS scan<br>Port 8200</div></div>
+    <div class="tday"><div class="dn">Thu</div><div class="sb agent">24/7 Agent</div><div class="sb tls">03:00 TLS scan<br>Port 8200</div></div>
+    <div class="tday"><div class="dn">Fri</div><div class="sb agent">24/7 Agent</div><div class="sb tls">03:00 TLS scan<br>Port 8200</div></div>
+    <div class="tday"><div class="dn">Sat</div><div class="sb agent">24/7 Agent</div><div class="sb comp">02:00 Cluster TLS<br>Port 8201</div><div class="sb comp">02:30 Full port<br>TCP 1–65535</div><div class="sb cis">CIS Vault<br>custom checks</div></div>
+    <div class="tday"><div class="dn">Sun</div><div class="sb agent">24/7 Agent</div><div class="sb off">Maintenance<br>window</div></div>
+  </div>
+  <div style="text-align:center;margin-top:.6rem;font-size:.62rem;color:var(--text3);font-family:'IBM Plex Mono',monospace">
+    Agent: continuous 24/7 (RPM every 6h, process/net every 15m, CIS every 24h) &nbsp;·&nbsp; Scan engine: daily TLS + weekly cluster/ports
+  </div>
+</div>
+</section>
+
+<!-- ═══ 9. SUPPLEMENTARY GAPS ═══ -->
+<section id="gaps">
+<div class="wrap">
+  <div class="sec-num">09 — Supplementary Coverage</div>
+  <h2 class="sec-title">What the Agent Cannot Cover</h2>
+  <p class="sec-desc">Six specific assessments require the InsightVM scan engine because they need a network-external perspective.</p>
+
+  <div class="card-grid">
+    <div class="card daily"><div class="badge">Daily</div><h4>Vault API TLS (Port 8200)</h4><p>TLS protocol version, cipher suites, certificate chain, validity, HSTS header. Agent cannot perform external TLS handshake.</p><div class="ism">InsightVM Vault-TLS-Daily template</div></div>
+    <div class="card daily"><div class="badge">Daily</div><h4>HTTP Security Headers</h4><p>X-Content-Type-Options, X-Frame-Options, CSP, Strict-Transport-Security. Agent does not make HTTP requests to local services.</p><div class="ism">InsightVM Vault-TLS-Daily template</div></div>
+    <div class="card weekly"><div class="badge">Weekly</div><h4>Cluster TLS (Port 8201)</h4><p>mTLS enforcement, internal CA certificate validation, cluster cipher suite assessment from network perspective.</p><div class="ism">InsightVM Vault-Cluster-Weekly</div></div>
+    <div class="card weekly"><div class="badge">Weekly</div><h4>Port Exposure Validation</h4><p>Full TCP 1–65535 port scan from external vantage point. Agent reports listeners from inside OS but cannot validate from network.</p><div class="ism">InsightVM Vault-Cluster-Weekly</div></div>
+    <div class="card weekly"><div class="badge">Weekly</div><h4>CIS Vault Benchmark (Custom)</h4><p>Vault-specific hardening checks beyond standard CIS: listener config, audit device config, seal configuration, telemetry exposure.</p><div class="ism">InsightVM custom policy checks</div></div>
+    <div class="card h24"><div class="badge">Every 24h</div><h4>CIS RHEL 9 Benchmark</h4><p>Handled by agent's Endpoint Broker — assessed by InsightVM. No scan engine needed but InsightVM Console required for assessment.</p><div class="ism">Agent-based policy (Endpoint Broker)</div></div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ 10. REMEDIATION SLA ═══ -->
+<section id="sla" style="background:var(--bg2)">
+<div class="wrap">
+  <div class="sec-num">10 — Remediation SLA</div>
+  <h2 class="sec-title">Essential Eight Patching Timeframes</h2>
+  <p class="sec-desc">Agent-detected vulnerabilities mapped to E8 mandated SLAs. Agent validates remediation within 6 hours of patch.</p>
+
+  <table class="sla-t">
+    <thead><tr><th>Vulnerability Category</th><th>ISM</th><th>ML1 SLA</th><th>ML2 SLA</th><th>Agent Validation</th></tr></thead>
+    <tbody>
+      <tr><td>Critical CVE on Vault API (internet-facing)</td><td style="font-family:'IBM Plex Mono',monospace;font-size:.6rem">ISM-1876</td><td><span class="sla-b cr">48 hours</span></td><td><span class="sla-b cr">48 hours</span></td><td>Re-assessed within 6h of patch</td></tr>
+      <tr><td>Non-critical CVE on internet-facing Vault</td><td style="font-family:'IBM Plex Mono',monospace;font-size:.6rem">ISM-1690</td><td><span class="sla-b hi">2 weeks</span></td><td><span class="sla-b hi">2 weeks</span></td><td>Re-assessed within 6h</td></tr>
+      <tr><td>Critical CVE on RHEL 9 OS (internet-facing)</td><td style="font-family:'IBM Plex Mono',monospace;font-size:.6rem">ISM-1701</td><td><span class="sla-b cr">48 hours</span></td><td><span class="sla-b cr">48 hours</span></td><td>Re-assessed within 6h</td></tr>
+      <tr><td>CVE in security products (SELinux, auditd)</td><td style="font-family:'IBM Plex Mono',monospace;font-size:.6rem">ISM-1699</td><td><span class="sla-b hi">2 weeks</span></td><td><span class="sla-b hi">2 weeks</span></td><td>Re-assessed within 6h</td></tr>
+      <tr><td>Critical CVE on non-internet-facing OS (DR)</td><td style="font-family:'IBM Plex Mono',monospace;font-size:.6rem">ISM-1702</td><td><span class="sla-b md">1 month</span></td><td><span class="sla-b cr">48 hours</span></td><td>Re-assessed within 6h</td></tr>
+      <tr><td>CVE in other applications (ML2 scope)</td><td style="font-family:'IBM Plex Mono',monospace;font-size:.6rem">ISM-1700</td><td style="color:var(--text3);font-size:.62rem">Not required</td><td><span class="sla-b md">1 month</span></td><td>Re-assessed within 6h</td></tr>
+      <tr><td>Unsupported / EOL software detected</td><td style="font-family:'IBM Plex Mono',monospace;font-size:.6rem">ISM-1703</td><td><span class="sla-b cr">Immediate</span></td><td><span class="sla-b cr">Immediate</span></td><td>Re-assessed within 6h</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="cl"><div class="cl-label">Key ML2 Change</div><div class="cl-body" style="color:var(--purple)">Critical CVEs on DR nodes tighten from <strong>1 month → 48 hours</strong> at ML2. Agent's 6-hourly cycle ensures validation happens within hours of patch application.</div></div>
+    <div class="cl"><div class="cl-label">Agent Advantage</div><div class="cl-body" style="color:var(--green)">No manual re-scan trigger needed. Agent automatically re-collects RPM inventory within 6 hours. If CVE persists, Jira ticket is auto-reopened.</div></div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ 11. HARDENING ═══ -->
+<section id="hardening">
+<div class="wrap">
+  <div class="sec-num">11 — Security Hardening</div>
+  <h2 class="sec-title">Agent Security Controls on Vault Nodes</h2>
+  <p class="sec-desc">Agent confined by SELinux, resource-limited by systemd, and denied access to all sensitive Vault data paths.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0">
+    <div class="dia" style="margin:0">
+      <div class="dia-label">systemd Resource Constraints</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--text2);line-height:2">
+        <div>CPUQuota=<span style="color:var(--green)">10%</span> <span style="color:var(--text3)">← Vault always preempts agent</span></div>
+        <div>MemoryMax=<span style="color:var(--green)">256M</span> <span style="color:var(--text3)">← Hard OOM ceiling</span></div>
+        <div>MemoryHigh=<span style="color:var(--green)">200M</span> <span style="color:var(--text3)">← Soft throttle</span></div>
+        <div>IOWeight=<span style="color:var(--green)">50</span> <span style="color:var(--text3)">← Below default (100)</span></div>
+        <div>Nice=<span style="color:var(--green)">19</span> <span style="color:var(--text3)">← Lowest CPU priority</span></div>
+        <div>OOMScoreAdjust=<span style="color:var(--green)">500</span> <span style="color:var(--text3)">← Killed before Vault (-1000)</span></div>
+        <div>TasksMax=<span style="color:var(--green)">64</span> <span style="color:var(--text3)">← Prevent fork bomb</span></div>
+      </div>
+    </div>
+    <div class="dia" style="margin:0">
+      <div class="dia-label">SELinux Confined Domain</div>
+      <div style="font-size:.72rem;line-height:1.8">
+        <div style="color:var(--green);margin-bottom:.4rem"><strong>ALLOWED (rapid7_agent_t)</strong></div>
+        <div style="color:var(--text2)">Read: /proc /sys /etc /var/lib/rpm</div>
+        <div style="color:var(--text2)">R/W: /opt/rapid7/ /var/log/rapid7/</div>
+        <div style="color:var(--text2)">Exec: /opt/rapid7/ir_agent/components/</div>
+        <div style="color:var(--text2)">Net: Outbound TCP/443 only</div>
+        <div style="color:var(--red);margin-top:.6rem;margin-bottom:.4rem"><strong>DENIED</strong></div>
+        <div style="color:var(--text2)">/opt/vault/data/ (Raft storage)</div>
+        <div style="color:var(--text2)">/opt/vault/tls/ (TLS private keys)</div>
+        <div style="color:var(--text2)">/vault/audit/ (audit logs)</div>
+        <div style="color:var(--text2)">All inbound network listeners</div>
+        <div style="color:var(--text2)">Execution outside /opt/rapid7/</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══ 12. FAILURE RECOVERY ═══ -->
+<section id="recovery" style="background:var(--bg2)">
+<div class="wrap">
+  <div class="sec-num">12 — Failure & Recovery</div>
+  <h2 class="sec-title">Agent Failure Impact on Vault</h2>
+  <p class="sec-desc">Every agent failure scenario results in ZERO impact on Vault availability. The agent is not in Vault's critical path.</p>
+
+  <table class="sla-t">
+    <thead><tr><th>Failure</th><th>Detection</th><th>Vault Impact</th><th>Recovery</th></tr></thead>
+    <tbody>
+      <tr><td>Agent process crashes</td><td>systemd auto-restart (30s), PagerDuty if not recovered in 5 min</td><td style="color:var(--green);font-weight:600">ZERO</td><td>systemd auto-restart. If repeated: Ansible re-deploys from RPM</td></tr>
+      <tr><td>Agent OOM killed</td><td>systemd auto-restart, Prometheus OOM alert</td><td style="color:var(--green);font-weight:600">ZERO — OOMScoreAdjust=500 ensures agent killed before Vault (-1000)</td><td>systemd auto-restart. Investigate via Rapid7 support case</td></tr>
+      <tr><td>Agent cannot reach cloud</td><td>Agent buffers locally in /opt/rapid7/ir_agent/. No data loss</td><td style="color:var(--green);font-weight:600">ZERO — agent continues collecting offline</td><td>Fix network/proxy/DNS. Agent auto-uploads buffered data on reconnect</td></tr>
+      <tr><td>Agent version incompatible</td><td>Staging test set catches before production (48h delay)</td><td style="color:var(--green);font-weight:600">ZERO — caught in staging</td><td>Block production auto-update. Open Rapid7 support case</td></tr>
+      <tr><td>Agent corrupted</td><td>Ansible idempotent check detects missing/broken agent</td><td style="color:var(--green);font-weight:600">ZERO</td><td>Ansible role re-deploys: remove, reinstall, re-register</td></tr>
+    </tbody>
+  </table>
+</div>
+</section>
+
+<div class="footer">
+  Rapid7 Insight Agent Architecture · Vault RHEL 9 · Essential Eight ML1/ML2 · v1.0 · April 2026 · Classification: Internal – Restricted
+</div>
+
+</body>
+</html>
