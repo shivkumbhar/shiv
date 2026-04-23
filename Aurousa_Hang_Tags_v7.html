@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AUROUSA — Printable Hang Tags</title>
+<template id="__bundler_thumbnail" data-bg-color="#F5F0E8">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#F5F0E8"/>
+    <rect x="480" y="180" width="240" height="440" rx="6" fill="#FEFDFB" stroke="#1A5040" stroke-width="3"/>
+    <circle cx="600" cy="220" r="8" fill="none" stroke="#1A5040" stroke-width="2" stroke-dasharray="3 2"/>
+    <rect x="510" y="260" width="180" height="80" fill="#1A5040"/>
+    <circle cx="600" cy="300" r="22" fill="#1A5040"/>
+    <text x="600" y="308" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="26" fill="#FEFDFB">Au</text>
+    <text x="600" y="400" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="22" fill="#3D2B35">Byron</text>
+    <text x="600" y="430" text-anchor="middle" font-family="Georgia, serif" font-weight="400" font-style="italic" font-size="14" fill="#5C574C">Beach Towel</text>
+    <line x1="520" y1="540" x2="680" y2="540" stroke="#C87820" stroke-width="1"/>
+    <text x="600" y="570" text-anchor="middle" font-family="monospace" font-size="11" fill="#7A7568" letter-spacing="2">BYRON-BT-001</text>
+    <text x="600" y="740" text-anchor="middle" font-family="monospace" font-size="18" fill="#5C574C" letter-spacing="6">HANG TAGS</text>
+  </svg>
+</template>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   AUROUSA — Printable Hang Tags (v7.0)
+   Tag: 85 × 130 mm, cream card, raisin ink, emerald + ochre accents.
+   Sheet: A4 portrait, 2 tags per row, front/back mirrored pairs.
+   Typography + tokens: Design System v2.0 (Playfair, DM Sans, JetBrains Mono).
+   SKU data: 21 SKUs across 5 collections, incl. extended Kitchen Towel range
+             (6 SKUs: Grove, Ribbon, Harvest in Muskmelon; Meadow, Orchard,
+             Canopy in Piquant Green — both on Vanilla Custard ground).
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --emerald:      #1A5040;
+  --emerald-dark: #143D32;
+  --ochre:        #C87820;
+  --raisin:       #3D2B35;
+  --sand:         #F5F0E8;
+  --sand-dark:    #E8E2D8;
+  --cream:        #FEFDFB;
+
+  --warm-900: #2E2A25;
+  --warm-700: #5C574C;
+  --warm-600: #7A7568;
+  --warm-500: #9E9889;
+  --warm-300: #E0DAD0;
+  --warm-200: #EBE6DC;
+
+  --f-display: 'Playfair Display', Georgia, serif;
+  --f-body:    'DM Sans', system-ui, sans-serif;
+  --f-mono:    'JetBrains Mono', ui-monospace, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+@page { size: A4 portrait; margin: 12mm; }
+
+html, body { background: var(--sand); color: var(--warm-900); font-family: var(--f-body); -webkit-font-smoothing: antialiased; }
+
+/* Force print to keep swatch colours, dots, coloured accents */
+* { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+
+/* ───────────────────────────── Screen chrome ───────────────────────────── */
+
+.screen-chrome {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 32px 24px;
+}
+.screen-chrome .wordmark {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--f-display); font-weight: 800; font-size: 22px;
+  color: var(--emerald); letter-spacing: -0.015em;
+}
+.screen-chrome .wordmark-circle {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--emerald);
+  color: var(--cream); display: inline-flex; align-items: center; justify-content: center;
+  font-size: 16px; letter-spacing: -0.04em; padding-right: 1px;
+}
+.screen-chrome h1 {
+  font-family: var(--f-display); font-weight: 700; font-size: 46px;
+  color: var(--emerald); letter-spacing: -0.025em; line-height: 1.02; margin: 18px 0 8px;
+}
+.screen-chrome .lede {
+  color: var(--warm-700); font-size: 15px; max-width: 58ch; line-height: 1.55;
+}
+.screen-chrome .meta {
+  display: flex; gap: 28px; flex-wrap: wrap; margin-top: 22px;
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--warm-600);
+}
+.screen-chrome .meta b { color: var(--emerald); font-weight: 600; }
+.toolbar {
+  margin-top: 28px; display: flex; gap: 10px; align-items: center;
+  padding: 14px 18px; background: var(--cream); border: 1px solid var(--warm-200);
+  border-radius: 12px; flex-wrap: wrap;
+}
+.toolbar button {
+  font-family: var(--f-body); font-size: 13px; font-weight: 600;
+  padding: 9px 16px; border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+  transition: all 180ms cubic-bezier(0.16,1,0.3,1);
+}
+.toolbar button.primary { background: var(--emerald); color: var(--cream); }
+.toolbar button.primary:hover { background: var(--emerald-dark); }
+.toolbar button.ghost { background: transparent; color: var(--warm-700); border-color: var(--warm-300); }
+.toolbar button.ghost:hover { color: var(--emerald); border-color: var(--emerald); }
+.toolbar .spacer { flex: 1; }
+.toolbar label {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 12px;
+  color: var(--warm-700); font-family: var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.toolbar input[type=checkbox] { accent-color: var(--emerald); width: 14px; height: 14px; }
+
+/* ───────────────────────────── Sheet + tag layout ───────────────────────────── */
+
+.sheets {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 32px 80px;
+}
+
+.collection {
+  margin-top: 36px;
+}
+.collection-head {
+  display: flex; align-items: baseline; gap: 16px;
+  padding: 14px 18px; background: var(--cream); border-radius: 10px;
+  border-left: 3px solid var(--ochre);
+  box-shadow: 0 1px 3px rgba(26,80,64,0.04);
+}
+.collection-head h2 {
+  font-family: var(--f-display); font-weight: 700; font-size: 22px;
+  color: var(--emerald); letter-spacing: -0.015em;
+}
+.collection-head .count {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--warm-600);
+}
+
+.row {
+  display: flex; gap: 8mm; justify-content: center; flex-wrap: wrap;
+  margin-top: 16px;
+  page-break-inside: avoid; break-inside: avoid;
+}
+.pair {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  page-break-inside: avoid; break-inside: avoid;
+}
+.pair-label {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--warm-600); margin-bottom: 2px;
+}
+.pair-tags { display: flex; gap: 4mm; }
+
+/* ───────────────────────────── The tag ───────────────────────────── */
+
+.tag {
+  width: 85mm;
+  height: 130mm;
+  background: var(--cream);
+  color: var(--raisin);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(26,80,64,0.10), 0 1px 3px rgba(0,0,0,0.06);
+  flex-shrink: 0;
+  font-family: var(--f-body);
+  border-radius: 1.2mm; /* subtle rounded corners — standard die-cut */
+}
+.crop-mark {
+  position: absolute; width: 3mm; height: 3mm; border: 0.3pt solid var(--warm-300);
+  opacity: 0; /* hidden by default; shown in print-aid mode */
+}
+.show-crops .crop-mark { opacity: 1; }
+.show-crops .tl { top: -1.5mm; left: -1.5mm; border-right: none; border-bottom: none; }
+.show-crops .tr { top: -1.5mm; right: -1.5mm; border-left: none; border-bottom: none; }
+.show-crops .bl { bottom: -1.5mm; left: -1.5mm; border-right: none; border-top: none; }
+.show-crops .br { bottom: -1.5mm; right: -1.5mm; border-left: none; border-top: none; }
+
+/* Hole punch guide */
+.hole {
+  position: absolute; top: 5mm; left: 50%; transform: translateX(-50%);
+  width: 4.2mm; height: 4.2mm; border-radius: 50%;
+  border: 0.6pt dashed rgba(61,43,53,0.45);
+  z-index: 10; background: rgba(255,255,255,0.001);
+}
+
+/* ═══ FRONT ═══ */
+
+.front {
+  padding: 11mm 7mm 7mm;
+  display: flex; flex-direction: column; height: 100%;
+  position: relative;
+}
+
+/* Color band at top — product hex, muted with thin border */
+.swatch-band {
+  position: absolute; top: 11mm; left: 0; right: 0; height: 38mm;
+  display: flex; align-items: flex-end; justify-content: flex-end;
+  padding: 4mm 7mm;
+}
+.swatch-band::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--swatch, var(--emerald));
+}
+.swatch-band::after {
+  /* subtle texture stripes — hint of woven cotton */
+  content: ''; position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,0.05) 0 0.3mm,
+    transparent 0.3mm 0.8mm
+  );
+  mix-blend-mode: overlay;
+}
+.swatch-hex {
+  position: relative;
+  font-family: var(--f-mono); font-size: 7pt; letter-spacing: 0.12em;
+  color: rgba(254,253,251,0.78); z-index: 2;
+}
+
+/* Wordmark row — sits above color band */
+/* Lockup — matches DS spec: circle diameter = font-size × 1.48,
+   "Au" sits inside circle with slight right-pad, "rousa" sits flush beside
+   it with only 0.5mm margin. No flex gap. */
+.front .wm {
+  position: relative; z-index: 3;
+  display: inline-flex; align-items: center; line-height: 1;
+}
+.front .wm-circle {
+  /* font-size 8.5pt → circle ≈ 8.5 × 1.48 ≈ 12.6pt ≈ 4.45mm.
+     Use slightly larger 5.2mm to keep visual weight at tag scale. */
+  width: 5.2mm; height: 5.2mm; border-radius: 50%; background: var(--raisin);
+  color: var(--cream); display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--f-display); font-weight: 700; font-size: 8.5pt;
+  letter-spacing: -0.04em; line-height: 1; padding-right: 0.2mm;
+  flex-shrink: 0;
+}
+.front .wm-word {
+  font-family: var(--f-display); font-weight: 800; font-size: 12.5pt;
+  color: var(--raisin); letter-spacing: 0.015em; line-height: 1;
+  margin-left: 0.5mm;
+}
+
+/* Category strip — shows on swatch band */
+.front .category {
+  position: absolute; left: 7mm; bottom: 4mm; z-index: 3;
+  font-family: var(--f-mono); font-size: 7pt; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--cream); opacity: 0.85;
+}
+
+/* Main name block */
+.front .name-block {
+  margin-top: calc(38mm + 9mm);
+  text-align: center;
+  padding: 0 3mm;
+}
+.front .origin {
+  font-family: var(--f-mono); font-size: 6.8pt; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--ochre); margin-bottom: 3mm;
+}
+.front .product-name {
+  font-family: var(--f-display); font-weight: 700; font-size: 20pt;
+  line-height: 1.02; letter-spacing: -0.02em; color: var(--raisin);
+}
+.front .product-type {
+  font-family: var(--f-display); font-weight: 400; font-style: italic;
+  font-size: 11pt; color: var(--warm-700); margin-top: 1.8mm;
+  letter-spacing: 0.005em;
+}
+
+/* Hang copy — the poetic line */
+.front .hang-copy {
+  font-family: var(--f-display); font-weight: 400; font-style: italic;
+  font-size: 9.5pt; line-height: 1.45; color: var(--raisin);
+  text-align: center; padding: 0 5mm;
+  margin-top: auto; margin-bottom: 6mm;
+}
+.front .hang-copy::before,
+.front .hang-copy::after {
+  content: ''; display: block; margin: 3mm auto;
+  width: 8mm; height: 0.5pt; background: var(--ochre);
+}
+
+/* Bottom identifier strip */
+.front .sku-strip {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--f-mono); font-size: 6.5pt; letter-spacing: 0.12em;
+  color: var(--warm-600); text-transform: uppercase;
+  border-top: 0.5pt solid var(--warm-200); padding-top: 2.2mm;
+  gap: 2mm;
+}
+.front .sku-strip span {
+  white-space: nowrap;
+}
+
+/* ═══ BACK ═══ */
+
+.back {
+  padding: 11mm 7mm 7mm;
+  display: flex; flex-direction: column; height: 100%;
+  background: var(--cream);
+}
+.back .back-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 3mm; border-bottom: 0.5pt solid var(--warm-200);
+}
+.back .back-head .wm-small {
+  display: inline-flex; align-items: center; line-height: 1;
+}
+.back .back-head .wm-small-circle {
+  width: 4mm; height: 4mm; border-radius: 50%; background: var(--emerald);
+  color: var(--cream); display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--f-display); font-weight: 700; font-size: 6.5pt;
+  letter-spacing: -0.04em; line-height: 1; padding-right: 0.15mm;
+  flex-shrink: 0;
+}
+.back .back-head .wm-small-word {
+  font-family: var(--f-display); font-weight: 800; font-size: 9.5pt;
+  color: var(--emerald); letter-spacing: 0.015em; line-height: 1;
+  margin-left: 0.4mm;
+}
+.back .back-head .sku {
+  font-family: var(--f-mono); font-size: 6.5pt; letter-spacing: 0.14em;
+  color: var(--warm-600); text-transform: uppercase;
+}
+
+/* Spec grid */
+.specs {
+  margin-top: 4mm;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 3mm;
+}
+.spec {
+  border-top: 0.3pt solid var(--warm-200);
+  padding-top: 1.8mm;
+}
+.spec .k {
+  font-family: var(--f-mono); font-size: 5.8pt; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--warm-600); margin-bottom: 0.8mm;
+}
+.spec .v {
+  font-family: var(--f-body); font-size: 8pt; font-weight: 500;
+  color: var(--raisin); line-height: 1.3;
+}
+
+/* Origin story */
+.origin-block {
+  margin-top: 5mm; padding-top: 3mm;
+  border-top: 0.5pt solid var(--warm-200);
+}
+.origin-block .label {
+  font-family: var(--f-mono); font-size: 6pt; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--ochre); margin-bottom: 2mm;
+}
+.origin-block .copy {
+  font-family: var(--f-body); font-size: 7.8pt; line-height: 1.5;
+  color: var(--warm-900);
+}
+
+/* Care row */
+.care-row {
+  margin-top: auto;
+  padding-top: 3mm; border-top: 0.5pt solid var(--warm-200);
+}
+.care-row .label {
+  font-family: var(--f-mono); font-size: 6pt; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--warm-600); margin-bottom: 2mm;
+}
+.care-icons {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 1mm;
+}
+.care-icon {
+  display: flex; flex-direction: column; align-items: center; gap: 1mm;
+  flex: 1;
+}
+.care-icon svg { width: 5.5mm; height: 5.5mm; display: block; }
+.care-icon .c-label {
+  font-family: var(--f-mono); font-size: 5.2pt; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--warm-700); text-align: center;
+  line-height: 1.2;
+}
+
+/* Footer */
+.back .footer {
+  margin-top: 3mm; padding-top: 2.2mm;
+  border-top: 0.3pt solid var(--warm-200);
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--f-mono); font-size: 5.6pt; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--warm-600);
+}
+.back .footer .dot {
+  width: 2mm; height: 2mm; border-radius: 50%; background: var(--swatch, var(--emerald));
+  display: inline-block; vertical-align: middle; margin-right: 1.4mm;
+  border: 0.3pt solid rgba(0,0,0,0.08);
+}
+
+/* ───────────────────────────── Print rules ───────────────────────────── */
+
+@media print {
+  .screen-chrome, .toolbar, .no-print { display: none !important; }
+  body, html { background: white !important; }
+  .sheets { max-width: none; padding: 0; margin: 0; }
+  .collection { page-break-before: always; margin-top: 0; }
+  .collection:first-of-type { page-break-before: auto; }
+  .collection-head { display: none; }
+  .row { margin-top: 0; margin-bottom: 8mm; }
+  .pair-label { display: none; }
+  .tag { box-shadow: none; border-radius: 0; }
+  .show-crops .crop-mark { display: block; }
+
+  /* Preserve every colour at the printer — critical for swatch bands */
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  .swatch-band::before { background: var(--swatch) !important; }
+  .tag, .back, .front { background: var(--cream) !important; }
+  .wm-circle { background: var(--raisin) !important; color: var(--cream) !important; }
+  .footer .dot { background: var(--swatch) !important; }
+  .origin, .origin-block .label { color: var(--ochre) !important; }
+  .wm-small { color: var(--emerald) !important; }
+  .hang-copy::before, .hang-copy::after { background: var(--ochre) !important; }
+}
+
+/* Visual proof mode toggle */
+body.proof-mode .sheets { background: repeating-linear-gradient(45deg, transparent 0 12px, rgba(26,80,64,0.02) 12px 13px); }
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════ Screen header ══════════════════════════════════ -->
+<section class="screen-chrome no-print">
+  <div class="wordmark"><span class="wordmark-circle">Au</span>rousa</div>
+  <h1>Printable hang tags</h1>
+  <p class="lede">
+    Front &amp; back pairs for all 21 SKUs across five collections. Each tag is 85 × 130 mm, printed
+    cream-card stock with raisin ink, designed to be die-cut and strung through a top hole punch.
+    Press <b>Print</b> and save as PDF — the sheet auto-paginates by collection.
+  </p>
+  <div class="meta">
+    <span><b>Format</b> &nbsp; A4 · 85 × 130 mm</span>
+    <span><b>SKUs</b> &nbsp; 21</span>
+    <span><b>Pages</b> &nbsp; 10</span>
+    <span><b>Typography</b> &nbsp; Playfair · DM Sans · JetBrains Mono</span>
+  </div>
+
+  <div class="toolbar">
+    <button class="primary" onclick="window.print()">⎙ &nbsp;Print / Save as PDF</button>
+    <button class="ghost" onclick="document.body.classList.toggle('show-crops')">Toggle crop marks</button>
+    <button class="ghost" onclick="document.body.classList.toggle('proof-mode')">Proof background</button>
+    <span class="spacer"></span>
+    <label><input type="checkbox" id="showBacks" checked> Show backs</label>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════ Sheets ══════════════════════════════════ -->
+<main class="sheets" id="sheets"></main>
+
+<!-- ══════════════════════════════════ Care icon library ══════════════════════════════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- wash 40 -->
+    <symbol id="ic-wash" viewBox="0 0 24 24">
+      <path d="M4 7c0-1.5 1.3-2.5 2.8-2.5h10.4c1.5 0 2.8 1 2.8 2.5v10.5c0 1.5-1.3 2.5-2.8 2.5H6.8C5.3 20 4 19 4 17.5V7z"
+            fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M8 10c1.5-1 3-1 4 0s2.5 1 4 0M8 14c1.5-1 3-1 4 0s2.5 1 4 0" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      <text x="12" y="6.5" text-anchor="middle" font-family="monospace" font-size="3" fill="currentColor" font-weight="700">40</text>
+    </symbol>
+    <!-- line dry -->
+    <symbol id="ic-dry" viewBox="0 0 24 24">
+      <rect x="3.5" y="5" width="17" height="14" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M5 9h14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </symbol>
+    <!-- iron low -->
+    <symbol id="ic-iron" viewBox="0 0 24 24">
+      <path d="M3 17h18l-2.5-7a3 3 0 0 0-2.9-2.2H9.1a3 3 0 0 0-2.7 1.7L3 17z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      <circle cx="12" cy="14" r="0.8" fill="currentColor"/>
+    </symbol>
+    <!-- no bleach -->
+    <symbol id="ic-bleach" viewBox="0 0 24 24">
+      <path d="M5 19l7-14 7 14H5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M6 7l12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+    <!-- gentle cycle -->
+    <symbol id="ic-gentle" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M6 13c2-1.5 4-1.5 6 0s4 1.5 6 0" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ══════════════════════════════════ Data + render ══════════════════════════════════ -->
+<script>
+const SKUS = [
+  /* ── Beach Towels ────────────────────────────────────────────────────── */
+  { sku:"BYRON-BT-001", name:"Byron", type:"Multi-Stripe Velour Beach Towel", collection:"Beach Towels", size:"95 × 175 cm", gsm:"500", material:"100% Combed Cotton", weave:"Velour Face / Terry Back", colour:"Vanilla Cream, Piquant Green, Warm Coral, Deep Emerald, Sunshine Gold", hex:"#17806A", copy:"Crafted for the quiet moments between the sun & the sea.", origin:"Byron Bay", origin_sub:"NSW", story:"Australia's Most Easterly Point. Cape Byron Lighthouse, The Pass Surf Break, Wategos Beach. Vibrant Surf Culture Meets Barefoot Coastal Living." },
+  { sku:"JARDIN-BT-001", name:"Jardin", type:"Botanical Jacquard Velour Beach Towel", collection:"Beach Towels", size:"95 × 175 cm", gsm:"500", material:"100% Combed Cotton", weave:"Jacquard Velour / Terry Back", colour:"Vanilla Cream, Sage Green, Warm Coral, Golden Yellow", hex:"#5A8A50", copy:"Where botanical beauty meets the open water.", origin:"French For 'Garden'", origin_sub:"", story:"Inspired By Australian Native Gardens. Grevillea, Banksia, And Eucalyptus Forms From The Royal Botanic Garden Sydney To Noosa's Subtropical Plantings." },
+  { sku:"NOOSA-BT-001", name:"Noosa", type:"Cabana Stripe Velour Beach Towel", collection:"Beach Towels", size:"95 × 175 cm", gsm:"500", material:"100% Combed Cotton", weave:"Velour Face / Terry Back", colour:"Deep Emerald, Vanilla Cream, Warm Coral accent", hex:"#17806A", copy:"Classic cabana stripes for golden Australian summers.", origin:"Noosa Heads", origin_sub:"QLD", story:"Where Hastings Street Meets The National Park. Five Bays Along The Boardwalk. Sunshine Coast Beach-Club Aesthetic." },
+
+  /* ── Patterned Bath Towels ─────────────────────────────────────────── */
+  { sku:"KAKADU-BT-001", name:"Kakadu", type:"Grindle Wildlife Jacquard Bath Towel", collection:"Patterned Bath Towels", size:"70 × 140 cm", gsm:"550", material:"100% Combed Cotton", weave:"Jacquard Terry (Grindle)", colour:"Natural Stone, Warm Sand, Earthy Taupe, Bone White", hex:"#C8B89A", copy:"A celebration of Australia's iconic wildlife, woven in cotton.", origin:"Kakadu National Park", origin_sub:"NT", story:"Nearly 20,000 Sq Km Of Floodplain, Escarpment, And Billabong. Earthy Tones Of The Top End." },
+  { sku:"GOLDEN-BT-001", name:"Golden Hour", type:"Honeycomb Jacquard Bath Towel", collection:"Patterned Bath Towels", size:"70 × 140 cm", gsm:"550", material:"100% Combed Cotton", weave:"Jacquard Terry", colour:"Aspen Gold", hex:"#E8A840", copy:"The warmth of an Australian afternoon, woven in every thread.", origin:"Golden Hour", origin_sub:"", story:"That Last Hour When The Sun Turns Hay Bales, Rooftops, River Surfaces, And Sandstone Walls The Same Honey-Gold. Not A Place. A Time." },
+  { sku:"BOTANICA-BT-001", name:"Botanica", type:"Leaf Jacquard Bath Towel", collection:"Patterned Bath Towels", size:"70 × 140 cm", gsm:"550", material:"100% Combed Cotton", weave:"Jacquard Terry", colour:"Piquant Green", hex:"#5A8A50", copy:"Inspired by Australia's lush native flora.", origin:"Australian Native Flora", origin_sub:"", story:"Leaves Shaped By Drought And Fire. Eucalyptus, Melaleuca, Callistemon." },
+  { sku:"LOTUS-BT-001", name:"Lotus", type:"Mandala Jacquard Bath Towel", collection:"Patterned Bath Towels", size:"70 × 140 cm", gsm:"550", material:"100% Combed Cotton", weave:"Jacquard Terry", colour:"Emerald", hex:"#1A7A50", copy:"Artisan mandala craftsmanship for the modern home.", origin:"The Lotus Flower", origin_sub:"", story:"Emblem Of Emergence. Present In Billabongs And Water Gardens From The North To The East Coast." },
+  { sku:"SOLSTICE-BT-001", name:"Solstice", type:"Sun Medallion Jacquard Bath Towel", collection:"Patterned Bath Towels", size:"70 × 140 cm", gsm:"550", material:"100% Combed Cotton", weave:"Jacquard Terry", colour:"Muskmelon", hex:"#E8904A", copy:"The sun, the sea and the warmth of Australian living.", origin:"Australian Summer Solstice", origin_sub:"", story:"December 22nd. Nearly Fifteen Hours Of Daylight." },
+
+  /* ── Luxe Bath Towels (Dobby Plain Dyed) ──────────────────────────── */
+  { sku:"NOOSA-BLUSH-BT-001", name:"Noosa Blush", type:"Dobby Bath Towel", collection:"Luxe Bath Towels", size:"70 × 140 cm", gsm:"640", material:"100% Combed Cotton", weave:"Dobby Plain Dyed Terry", colour:"Soft Blush Pink", hex:"#F2C4B0", copy:"Soft dawn light across Laguna Bay, woven into every fibre.", origin:"Noosa Heads At Dawn", origin_sub:"", story:"Twenty Minutes Before The Cafes Open, The Headland Turns Pink. Dawn Bounces Off Laguna Bay." },
+  { sku:"BYRON-SAGE-BT-001", name:"Byron Sage", type:"Dobby Bath Towel", collection:"Luxe Bath Towels", size:"70 × 140 cm", gsm:"640", material:"100% Combed Cotton", weave:"Dobby Plain Dyed Terry", colour:"Muted Sage Green", hex:"#A8C8A0", copy:"The quiet green of the hinterland, behind the noise of the coast.", origin:"Byron Hinterland", origin_sub:"NSW", story:"Twenty Minutes Inland. Macadamia Orchards, Dairy Farms, Morning Mist. The Green Of New Growth On A Bangalow Palm After Overnight Rain." },
+  { sku:"DAINTREE-TEAL-BT-001", name:"Daintree Teal", type:"Dobby Bath Towel", collection:"Luxe Bath Towels", size:"70 × 140 cm", gsm:"640", material:"100% Combed Cotton", weave:"Dobby Plain Dyed Terry", colour:"Deep Rainforest Teal", hex:"#4A8A88", copy:"Ancient rainforest greens brought into your sanctuary.", origin:"Daintree Rainforest", origin_sub:"QLD", story:"The Oldest Tropical Rainforest On Earth, Over 180 Million Years Old. At Cape Tribulation, The Rainforest Meets The Coral Sea." },
+  { sku:"BAROSSA-LAV-BT-001", name:"Barossa Lavender", type:"Dobby Bath Towel", collection:"Luxe Bath Towels", size:"70 × 140 cm", gsm:"640", material:"100% Combed Cotton", weave:"Dobby Plain Dyed Terry", colour:"Dusty Lavender-Mauve", hex:"#9A8A9E", copy:"The rich tones of a South Australian sunset.", origin:"Barossa Valley", origin_sub:"SA", story:"An Hour North Of Adelaide. Stone Cottages From The 1840s Between Shiraz Vines Six Generations Old." },
+
+  /* ── Kitchen Towels ─────────────────────────────────────────────────── */
+  /* Muskmelon pile on Vanilla Custard ground — Pantone 15-1242 TCX + 12-0815 TCX */
+  { sku:"GROVE-KT-001", name:"Grove", type:"Citrus Stripe Jacquard Kitchen Towel", collection:"Kitchen Towels", size:"50 × 70 cm", gsm:"400", material:"100% Combed Cotton", weave:"Jacquard Terry", colour:"Muskmelon on Vanilla Custard", hex:"#E8904A", copy:"Citrus orchard stripes for a fresh Australian kitchen.", origin:"Australian Citrus Groves", origin_sub:"", story:"The Geometry Of Orchard Rows In The Sunraysia." },
+  { sku:"RIBBON-KT-001", name:"Ribbon", type:"Citrus Band Jacquard Kitchen Towel", collection:"Kitchen Towels", size:"50 × 70 cm", gsm:"400", material:"100% Combed Cotton", weave:"Jacquard Terry", colour:"Muskmelon on Vanilla Custard", hex:"#E8904A", copy:"Ribbons of citrus across Australian cotton.", origin:"Orchard Bands", origin_sub:"Riverina · Sunraysia", story:"Bands Of Fruit Between The Rows. The Horizontal Rhythm Of A Working Orchard At Picking Time." },
+  { sku:"HARVEST-KT-001", name:"Harvest", type:"Citrus Geometric Jacquard Kitchen Towel", collection:"Kitchen Towels", size:"50 × 70 cm", gsm:"400", material:"100% Combed Cotton", weave:"Jacquard Terry", colour:"Muskmelon on Vanilla Custard", hex:"#E8904A", copy:"Geometric citrus, crafted for the modern Australian kitchen.", origin:"Aerial View Of Australian Orchards", origin_sub:"", story:"Ordered Rows, Ordered Shadows, Citrus At Each Intersection." },
+
+  /* Piquant Green pile on Vanilla Custard ground — Pantone 17-0235 TCX + 12-0815 TCX */
+  { sku:"MEADOW-KT-001", name:"Meadow", type:"Citrus Checker Jacquard Kitchen Towel", collection:"Kitchen Towels", size:"50 × 70 cm", gsm:"400", material:"100% Combed Cotton", weave:"Jacquard Terry", colour:"Piquant Green on Vanilla Custard", hex:"#5A8A50", copy:"A checkered meadow of lime and leaf.", origin:"Market Green", origin_sub:"Riverina · Burnett", story:"The Market Stall Geometry Of A Sunday Morning. Lime And Leaf, Repeated Until The Pattern Itself Feels Ripe." },
+  { sku:"ORCHARD-KT-001", name:"Orchard", type:"Citrus Scatter Jacquard Kitchen Towel", collection:"Kitchen Towels", size:"50 × 70 cm", gsm:"400", material:"100% Combed Cotton", weave:"Jacquard Terry", colour:"Piquant Green on Vanilla Custard", hex:"#5A8A50", copy:"Sun-ripened citrus, scattered across Australian cotton.", origin:"Australian Citrus Orchards", origin_sub:"", story:"Riverina, Sunraysia, Burnett Valley." },
+  { sku:"CANOPY-KT-001", name:"Canopy", type:"Citrus Canopy Jacquard Kitchen Towel", collection:"Kitchen Towels", size:"50 × 70 cm", gsm:"400", material:"100% Combed Cotton", weave:"Jacquard Terry", colour:"Piquant Green on Vanilla Custard", hex:"#5A8A50", copy:"The dense green canopy of a thriving orchard.", origin:"Orchard Canopy", origin_sub:"Burnett · Riverina", story:"What You See Looking Up Through The Leaves. A Dense Green Ceiling, Fruit Hiding In Plain Sight." },
+
+  /* ── Bedspreads ─────────────────────────────────────────────────────── */
+  { sku:"NINGALOO-BS-001", name:"Ningaloo Pearl", type:"Pearl Cotton Bedspread", collection:"Bedspreads", size:"231 × 231 cm", gsm:"—", material:"100% Combed Cotton", weave:"Plain Dyed", colour:"Soft Warm Pearl-White with Ivory Undertone", hex:"#F5F0E8", copy:"The luminous stillness of Ningaloo Reef, brought home.", origin:"Ningaloo Reef", origin_sub:"WA", story:"You Can Wade To The Reef From The Beach. The Only Place Where A World-Heritage Reef Meets A World-Heritage Desert." },
+  { sku:"ULURU-BS-001", name:"Uluru Ochre", type:"Ochre Cotton Bedspread", collection:"Bedspreads", size:"231 × 231 cm", gsm:"—", material:"100% Combed Cotton", weave:"Plain Dyed", colour:"Rich Red-Earth Ochre", hex:"#B85830", copy:"The ancient warmth of Australia's red centre.", origin:"Uluru", origin_sub:"NT", story:"Visible From 100 Km Away. At Sunrise, Arkose Sandstone Shifts Through Grey-Violet, Pink, Then Molten Ochre." },
+  { sku:"CORALSEA-BS-001", name:"Coral Sea Blue", type:"Blue Cotton Bedspread", collection:"Bedspreads", size:"231 × 231 cm", gsm:"—", material:"100% Combed Cotton", weave:"Plain Dyed", colour:"Vivid Ocean Blue", hex:"#1A5878", copy:"The depth and clarity of Australia's Great Barrier Reef.", origin:"Coral Sea", origin_sub:"QLD", story:"Beyond The Reef Shelf. Over A Million Square Kilometres Of Open Ocean." },
+
+];
+
+/* ── Helpers ────────────────────────────────────────────────────────────── */
+
+// Relative luminance — decide whether to invert text on swatch
+function isLight(hex) {
+  const h = hex.replace('#','');
+  const r = parseInt(h.slice(0,2),16)/255;
+  const g = parseInt(h.slice(2,4),16)/255;
+  const b = parseInt(h.slice(4,6),16)/255;
+  const L = 0.2126*r + 0.7152*g + 0.0722*b;
+  return L > 0.62;
+}
+
+function cropMarks() {
+  return `<span class="crop-mark tl"></span><span class="crop-mark tr"></span><span class="crop-mark bl"></span><span class="crop-mark br"></span>`;
+}
+
+function frontTag(s) {
+  const light = isLight(s.hex);
+  const onSwatchColor = light ? 'rgba(61,43,53,0.82)' : 'rgba(254,253,251,0.9)';
+  const hexColor = light ? 'rgba(61,43,53,0.55)' : 'rgba(254,253,251,0.75)';
+  return `
+  <article class="tag front" style="--swatch:${s.hex}">
+    ${cropMarks()}
+    <div class="hole"></div>
+
+    <div class="wm">
+      <span class="wm-circle">Au</span>
+      <span class="wm-word">rousa</span>
+    </div>
+
+    <div class="swatch-band">
+      <span class="category" style="color:${onSwatchColor}">${s.collection}</span>
+      <span class="swatch-hex" style="color:${hexColor}">${s.hex.toUpperCase()}</span>
+    </div>
+
+    <div class="name-block">
+      <div class="origin">${s.origin}</div>
+      <div class="product-name">${s.name}</div>
+      <div class="product-type">${s.type}</div>
+    </div>
+
+    <p class="hang-copy">${s.copy}</p>
+
+    <div class="sku-strip">
+      <span>${s.sku}</span>
+      <span>Made in India · Australian Owned</span>
+    </div>
+  </article>`;
+}
+
+function backTag(s) {
+  return `
+  <article class="tag back" style="--swatch:${s.hex}">
+    ${cropMarks()}
+    <div class="hole"></div>
+
+    <div class="back-head">
+      <span class="wm-small">
+        <span class="wm-small-circle">Au</span><span class="wm-small-word">rousa</span>
+      </span>
+      <span class="sku">${s.sku}</span>
+    </div>
+
+    <div class="specs">
+      <div class="spec"><div class="k">Size</div><div class="v">${s.size}</div></div>
+      <div class="spec"><div class="k">Weight</div><div class="v">${s.gsm === '—' ? '—' : s.gsm + ' GSM'}</div></div>
+      <div class="spec"><div class="k">Fibre</div><div class="v">${s.material}</div></div>
+      <div class="spec"><div class="k">Weave</div><div class="v">${s.weave}</div></div>
+      <div class="spec" style="grid-column:1/-1"><div class="k">Colour</div><div class="v">${s.colour}</div></div>
+    </div>
+
+    <div class="origin-block">
+      <div class="label">Inspiration · ${s.origin_sub}</div>
+      <div class="copy">${s.story}</div>
+    </div>
+
+    <div class="care-row">
+      <div class="label">Care</div>
+      <div class="care-icons" style="color:var(--warm-700)">
+        <div class="care-icon"><svg><use href="#ic-wash"/></svg><div class="c-label">Wash<br/>40°</div></div>
+        <div class="care-icon"><svg><use href="#ic-gentle"/></svg><div class="c-label">Gentle<br/>cycle</div></div>
+        <div class="care-icon"><svg><use href="#ic-bleach"/></svg><div class="c-label">No<br/>bleach</div></div>
+        <div class="care-icon"><svg><use href="#ic-dry"/></svg><div class="c-label">Line<br/>dry</div></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span><span class="dot"></span>${s.name}</span>
+      <span>aurousa.com.au</span>
+    </div>
+  </article>`;
+}
+
+function pair(s, showBack) {
+  return `
+  <div class="pair">
+    <div class="pair-label">${s.sku}</div>
+    <div class="pair-tags">
+      ${frontTag(s)}
+      ${showBack ? backTag(s) : ''}
+    </div>
+  </div>`;
+}
+
+function render() {
+  const showBack = document.getElementById('showBacks').checked;
+  const byCollection = {};
+  for (const s of SKUS) (byCollection[s.collection] ||= []).push(s);
+
+  const order = ["Beach Towels","Patterned Bath Towels","Luxe Bath Towels","Kitchen Towels","Bedspreads"];
+
+  let html = '';
+  for (const col of order) {
+    const items = byCollection[col] || [];
+    html += `<section class="collection">
+      <header class="collection-head no-print">
+        <h2>${col}</h2>
+        <span class="count">${items.length} SKU${items.length===1?'':'s'}</span>
+      </header>`;
+    // 2 per row
+    for (let i = 0; i < items.length; i += 2) {
+      html += `<div class="row">`;
+      html += pair(items[i], showBack);
+      if (items[i+1]) html += pair(items[i+1], showBack);
+      html += `</div>`;
+    }
+    html += `</section>`;
+  }
+  document.getElementById('sheets').innerHTML = html;
+}
+
+document.getElementById('showBacks').addEventListener('change', render);
+render();
+</script>
+
+</body>
+</html>
