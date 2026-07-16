@@ -1,0 +1,27 @@
+SELECT
+    da.host_name AS asset_name,
+    da.ip_address,
+    dos.description AS rhel_version,
+    cve.reference AS cve,
+    COALESCE(rhsa.reference, dv.nexpose_id) AS errata,
+    dv.date_published AS errata_release_date,
+    ROUND(EXTRACT(EPOCH FROM (NOW() - dv.date_published)) / 86400) AS days_since_errata_released,
+    fava.first_discovered AS first_detected_on_asset,
+    ROUND(EXTRACT(EPOCH FROM (fava.first_discovered - dv.date_published)) / 86400) AS days_exposed_before_detection
+FROM fact_asset_vulnerability_finding favf
+JOIN dim_asset da ON favf.asset_id = da.asset_id
+JOIN dim_operating_system dos ON da.operating_system_id = dos.operating_system_id
+JOIN dim_vulnerability dv ON favf.vulnerability_id = dv.vulnerability_id
+JOIN fact_asset_vulnerability_age fava
+     ON favf.asset_id = fava.asset_id
+    AND favf.vulnerability_id = fava.vulnerability_id
+JOIN dim_vulnerability_reference cve
+     ON dv.vulnerability_id = cve.vulnerability_id
+    AND cve.source = 'CVE'
+LEFT JOIN dim_vulnerability_reference rhsa
+     ON dv.vulnerability_id = rhsa.vulnerability_id
+    AND rhsa.source = 'REDHAT'
+WHERE dos.description ILIKE '%Red Hat%'
+  AND dv.nexpose_id ILIKE 'redhat-rhsa%'
+ORDER BY days_since_errata_released DESC;
+
