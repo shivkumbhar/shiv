@@ -1,0 +1,13 @@
+SELECT
+    da.host_name AS asset_name,
+    da.ip_address,
+    COUNT(DISTINCT fas.scan_id) AS scans_completed,
+    string_agg(DISTINCT to_char(ds.finished, 'YYYY-MM-DD'), ', ' ORDER BY to_char(ds.finished, 'YYYY-MM-DD') DESC) AS scan_dates
+FROM fact_asset_scan fas
+JOIN dim_asset da ON fas.asset_id = da.asset_id
+JOIN dim_scan ds ON fas.scan_id = ds.scan_id
+JOIN dim_scan_status dss ON ds.status_id = dss.status_id
+WHERE dss.description = 'Successful'
+  AND ds.finished > NOW() - INTERVAL '1 year'
+GROUP BY da.host_name, da.ip_address
+ORDER BY scans_completed DESC;
