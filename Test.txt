@@ -1,0 +1,9 @@
+SELECT DATE(ds.finished) AS scan_day, COUNT(DISTINCT ds.scan_id) AS scans_completed
+FROM fact_asset_scan fas
+JOIN dim_tag_asset dta ON fas.asset_id = dta.asset_id
+JOIN dim_tag dt ON dta.tag_id = dt.tag_id
+JOIN dim_scan ds ON fas.scan_id = ds.scan_id
+JOIN dim_scan_status dss ON ds.status_id = dss.status_id
+WHERE dt.tag_name = 'YourTagName' AND dss.description = 'Successful'
+GROUP BY DATE(ds.finished)
+ORDER BY scan_day;
