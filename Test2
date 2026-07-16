@@ -1,5 +1,46 @@
+WITH tagged_assets AS (
+    SELECT DISTINCT
+        da.asset_id,
+        da.host_name,
+        da.ip_address,
+        dt.tag_name
+    FROM dim_asset da
+    JOIN dim_tag_asset dta ON da.asset_id = dta.asset_id
+    JOIN dim_tag dt ON dta.tag_id = dt.tag_id
+    WHERE dt.tag_name = 'YourTagName'
+),
+scan_data AS (
+    SELECT
+        fas.asset_id,
+        ds.scan_id,
+        ds.finished,
+        DATE(ds.finished) AS scan_day
+    FROM fact_asset_scan fas
+    JOIN dim_scan ds ON fas.scan_id = ds.scan_id
+    JOIN dim_scan_status dss ON ds.status_id = dss.status_id
+    WHERE dss.description = 'Successful'
+      AND ds.finished > NOW() - INTERVAL '30 days'   -- compliance window
+)
 SELECT
-    da.host_name AS asset_name,
-    da.ip_address,
-    COUNT(DISTINCT fas.scan_id) AS scans_completed,
-    string_agg(DISTINCT to_char(ds.finished, 'YYYY-MM-DD'), ', ' ORDER BY to_char(ds.finished, 'YYYY-
+    ta.host_name AS asset_name,
+    ta.ip_address,
+    ta.tag_name,
+    COUNT(DISTINCT sd.scan_id) AS scans_completed,
+    COUNT(DISTINCT sd.scan_day) AS days_with_scan,
+    30 AS days_in_period,
+    MIN(sd.finished) AS first_scan_date,
+    MAX(sd.finished) AS last_scan_date,
+    ROUND(COUNT(DISTINCT sd.scan_day) * 100.0 / 30, 1) AS daily_coverage_pct,
+    ROUND(EXTRACT(EPOCH FROM (NOW() - MAX(sd.finished))) / 86400) AS days_since_last_scan,
+    CASE
+        WHEN COUNT(DISTINCT sd.scan_id) = 0 THEN 'NON-COMPLIANT - Never scanned'
+        WHEN COUNT(DISTINCT sd.scan_day) >= 30 THEN 'COMPLIANT - Daily'
+        WHEN COUNT(DISTINCT sd.scan_day) >= 27 THEN 'MOSTLY COMPLIANT (90%+)'
+        ELSE 'NON-COMPLIANT'
+    END AS compliance_status,
+    string_agg(DISTINCT to_char(sd.scan_day, 'YYYY-MM-DD'), ', '
+               ORDER BY to_char(sd.scan_day, 'YYYY-MM-DD') DESC) AS all_scan_dates
+FROM tagged_assets ta
+LEFT JOIN scan_data sd ON ta.asset_id = sd.asset_id
+GROUP BY ta.asset_id, ta.host_name, ta.ip_address, ta.tag_name
+ORDER BY days_with_scan ASC, asset_name;
