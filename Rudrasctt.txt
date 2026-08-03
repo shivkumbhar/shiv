@@ -1,0 +1,93 @@
+WITH parameters AS (
+    SELECT
+        12::integer AS reporting_weeks,
+        date_trunc('week', CURRENT_TIMESTAMP)::timestamp
+            AS current_week_start
+),
+
+reporting_period AS (
+    SELECT
+        reporting_weeks,
+        current_week_start - (reporting_weeks * INTERVAL '1 week')
+            AS period_start,
+        current_week_start AS period_end
+    FROM parameters
+),
+
+agent_assessments AS (
+    SELECT DISTINCT
+        das.asset_id,
+        date_trunc('week', das.scan_finished)::timestamp
+            AS assessment_week
+    FROM dim_asset_scan das
+    INNER JOIN dim_scan ds
+        ON ds.scan_id = das.scan_id
+    CROSS JOIN reporting_period rp
+    WHERE ds.type_id = 'G'       -- G = Rapid7 Agent assessment
+      AND ds.status_id = 'C'     -- C = successfully completed
+      AND das.scan_finished IS NOT NULL
+      AND das.scan_finished >= rp.period_start
+      AND das.scan_finished <  rp.period_end
+),
+
+asset_weekly_results AS (
+    SELECT
+        da.asset_id,
+        da.host_name,
+        da.ip_address,
+        da.sites,
+
+        COUNT(aa.assessment_week)
+            AS weeks_with_completed_scan,
+
+        rp.reporting_weeks
+            AS expected_weeks,
+
+        MAX(aa.assessment_week)
+            AS latest_completed_scan_week
+
+    FROM dim_asset da
+    CROSS JOIN reporting_period rp
+    LEFT JOIN agent_assessments aa
+        ON aa.asset_id = da.asset_id
+
+    GROUP BY
+        da.asset_id,
+        da.host_name,
+        da.ip_address,
+        da.sites,
+        rp.reporting_weeks
+)
+
+SELECT
+    asset_id,
+    COALESCE(host_name, 'Unknown') AS host_name,
+    ip_address,
+    sites,
+
+    weeks_with_completed_scan,
+    expected_weeks,
+
+    expected_weeks - weeks_with_completed_scan
+        AS missed_weeks,
+
+    ROUND(
+        100.0 * weeks_with_completed_scan
+        / NULLIF(expected_weeks, 0),
+        2
+    ) AS weekly_scan_percentage,
+
+    latest_completed_scan_week,
+
+    CASE
+        WHEN weeks_with_completed_scan = expected_weeks
+            THEN 'COMPLIANT'
+        ELSE 'NON-COMPLIANT'
+    END AS compliance_state
+
+FROM asset_weekly_results
+
+ORDER BY
+    compliance_state DESC,
+    weekly_scan_percentage ASC,
+    host_name;
