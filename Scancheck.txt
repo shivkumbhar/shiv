@@ -1,0 +1,15 @@
+SELECT
+    COALESCE(da.host_name, da.ip_address::text) AS asset_name,
+    da.ip_address,
+    to_char(da.last_assessed_for_vulnerabilities, 'YYYY-MM-DD HH24:MI') AS last_scan_date,
+    ROUND(EXTRACT(EPOCH FROM (NOW() - da.last_assessed_for_vulnerabilities)) / 86400) AS days_since_last_scan,
+    CASE
+        WHEN da.last_assessed_for_vulnerabilities IS NULL THEN 'NON-COMPLIANT - Never scanned'
+        WHEN da.last_assessed_for_vulnerabilities > NOW() - INTERVAL '14 days' THEN 'COMPLIANT'
+        ELSE 'NON-COMPLIANT'
+    END AS compliance_status,
+    CASE
+        WHEN da.last_assessed_for_vulnerabilities > NOW() - INTERVAL '14 days' THEN 100.0 ELSE 0.0
+    END AS compliance_pct
+FROM dim_asset da
+ORDER BY days_since_last_scan DESC NULLS FIRST, asset_name;
