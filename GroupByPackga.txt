@@ -1,16 +1,27 @@
 SELECT
-    COALESCE(
-        substring(dv.title FROM ':\s*(?:CVE-\d{4}-\d+:)?\s*([a-z0-9][a-z0-9\.\+\-]{2,})'),
-        left(dv.title, 60)
-    ) AS package_group,
+    ds.summary AS remediation,
     string_agg(DISTINCT dvr.reference, ', ' ORDER BY dvr.reference) AS cves,
     COUNT(DISTINCT dvr.reference) AS cve_count,
-    COUNT(DISTINCT favf.asset_id) AS affected_hosts
-FROM fact_asset_vulnerability_finding favf
-JOIN dim_vulnerability dv
-     ON favf.vulnerability_id = dv.vulnerability_id
+    COUNT(DISTINCT da.asset_id) AS affected_hosts
+FROM dim_asset_vulnerability_best_solution davbs
+JOIN dim_vulnerability dv USING (vulnerability_id)
+JOIN dim_asset da ON davbs.asset_id = da.asset_id
+JOIN dim_solution ds USING (solution_id)
 JOIN dim_vulnerability_reference dvr
-     ON favf.vulnerability_id = dvr.vulnerability_id
+     ON dv.vulnerability_id = dvr.vulnerability_id
     AND dvr.source = 'CVE'
-GROUP BY package_group
+GROUP BY ds.summary
 ORDER BY cve_count DESC;
+
+
+SELECT
+    ds.summary AS remediation,
+    string_agg(DISTINCT substring(dv.title FROM '(CVE-\d{4}-\d+)'), ', ') AS cves,
+    COUNT(DISTINCT dv.vulnerability_id) AS vuln_count,
+    COUNT(DISTINCT da.asset_id) AS affected_hosts
+FROM dim_asset_vulnerability_best_solution davbs
+JOIN dim_vulnerability dv USING (vulnerability_id)
+JOIN dim_asset da ON davbs.asset_id = da.asset_id
+JOIN dim_solution ds USING (solution_id)
+GROUP BY ds.summary
+ORDER BY vuln_count DESC;
