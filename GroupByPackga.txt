@@ -1,16 +1,42 @@
+WITH findings AS (
+    SELECT
+        CASE
+            WHEN da.host_name ILIKE '%prod%' THEN 'PROD'
+            WHEN da.host_name ILIKE '%dev%'  THEN 'DEV'
+            ELSE 'OTHER'
+        END AS environment,
+        ds.summary AS remediation,
+        dv.vulnerability_id,
+        substring(dv.title FROM '(CVE-\d{4}-\d+)') AS cve,
+        da.asset_id
+    FROM dim_asset_vulnerability_best_solution davbs
+    JOIN dim_vulnerability dv USING (vulnerability_id)
+    JOIN dim_asset da ON davbs.asset_id = da.asset_id
+    JOIN dim_solution ds USING (solution_id)
+),
+grouped AS (
+    SELECT
+        environment,
+        remediation,
+        string_agg(DISTINCT cve, ', ') AS cves,
+        COUNT(DISTINCT vulnerability_id) AS vuln_count,
+        COUNT(DISTINCT asset_id) AS affected_hosts
+    FROM findings
+    GROUP BY environment, remediation
+),
+env_totals AS (
+    SELECT environment,
+           COUNT(DISTINCT vulnerability_id) AS environment_distinct_vulns
+    FROM findings
+    GROUP BY environment
+)
 SELECT
-    CASE
-        WHEN da.host_name ILIKE '%prod%' THEN 'PROD'
-        WHEN da.host_name ILIKE '%dev%'  THEN 'DEV'
-        ELSE 'OTHER'
-    END AS environment,
-    ds.summary AS remediation,
-    string_agg(DISTINCT substring(dv.title FROM '(CVE-\d{4}-\d+)'), ', ') AS cves,
-    COUNT(DISTINCT dv.vulnerability_id) AS vuln_count,
-    COUNT(DISTINCT da.asset_id) AS affected_hosts
-FROM dim_asset_vulnerability_best_solution davbs
-JOIN dim_vulnerability dv USING (vulnerability_id)
-JOIN dim_asset da ON davbs.asset_id = da.asset_id
-JOIN dim_solution ds USING (solution_id)
-GROUP BY environment, ds.summary
-ORDER BY environment, vuln_count DESC;
+    g.environment,
+    g.remediation,
+    g.cves,
+    g.vuln_count,
+    g.affected_hosts,
+    et.environment_distinct_vulns
+FROM grouped g
+JOIN env_totals et USING (environment)
+ORDER BY g.environment, g.vuln_count DESC;
