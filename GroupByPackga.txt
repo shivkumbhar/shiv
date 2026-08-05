@@ -1,6 +1,6 @@
 SELECT
-    dsw.name AS software,
-    dsw.version AS installed_version,
+    substring(favi.proof FROM '([a-zA-Z][a-zA-Z0-9_+\.\-]{2,})[- ][0-9]') AS package,
+    left(min(favi.proof), 120) AS sample_proof,
     string_agg(DISTINCT dvr.reference, ', ' ORDER BY dvr.reference) AS cves,
     COUNT(DISTINCT dvr.reference) AS cve_count,
     COUNT(DISTINCT favi.asset_id) AS affected_hosts
@@ -8,10 +8,5 @@ FROM fact_asset_vulnerability_instance favi
 JOIN dim_vulnerability_reference dvr
      ON favi.vulnerability_id = dvr.vulnerability_id
     AND dvr.source = 'CVE'
-JOIN dim_asset_software das
-     ON favi.asset_id = das.asset_id
-JOIN dim_software dsw
-     ON das.software_id = dsw.software_id
-WHERE favi.proof ILIKE '%' || dsw.name || '%'      -- proof references this installed software
-GROUP BY dsw.name, dsw.version
-ORDER BY cve_count DESC, software;
+GROUP BY package
+ORDER BY cve_count DESC;
