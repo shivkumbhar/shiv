@@ -1,0 +1,43 @@
+WITH findings AS (
+    SELECT
+        CASE
+            WHEN da.host_name ILIKE '%prd%' AND da.host_name ILIKE '%jump%' THEN 'PROD JUMP'
+            WHEN da.host_name ILIKE '%dev%' AND da.host_name ILIKE '%jump%' THEN 'DEV JUMP'
+            WHEN da.host_name ILIKE '%prd%' THEN 'PROD'
+            WHEN da.host_name ILIKE '%dev%' THEN 'DEV'
+            WHEN da.host_name ILIKE '%lab%' THEN 'LAB'
+            WHEN da.host_name ILIKE '%npr%' THEN 'NPR'
+            ELSE 'OTHER'
+        END AS environment,
+        COALESCE('RHEL ' || NULLIF(dos.version, ''), dos.description) AS os_version,
+        COALESCE(
+            substring(dv.title FROM 'CVE-\d{4}-\d+:\s*([a-z0-9][a-zA-Z0-9\.\+\-_]{2,})'),
+            left(ds.summary, 80)
+        ) AS package_to_upgrade,
+        left(proofAsText(ds.fix), 150) AS fix_action,
+        dv.vulnerability_id,
+        substring(dv.title FROM '(CVE-\d{4}-\d+)') AS title_cve,
+        dvr.reference,
+        da.asset_id
+    FROM dim_asset_vulnerability_best_solution davbs
+    JOIN dim_vulnerability dv USING (vulnerability_id)
+    JOIN dim_asset da ON davbs.asset_id = da.asset_id
+    JOIN dim_operating_system dos ON da.operating_system_id = dos.operating_system_id
+    JOIN dim_solution ds USING (solution_id)
+    LEFT JOIN dim_vulnerability_reference dvr
+         ON dv.vulnerability_id = dvr.vulnerability_id
+)
+SELECT
+    environment,
+    os_version,
+    package_to_upgrade,
+    fix_action,
+    string_agg(DISTINCT CASE WHEN reference ~* 'RHSA[-:]' THEN reference END, ', ') AS errata,
+    string_agg(DISTINCT COALESCE(title_cve,
+        CASE WHEN reference ~* '^CVE-' THEN reference END), ', ') AS cves,
+    COUNT(DISTINCT vulnerability_id) AS vuln_count,
+    COUNT(DISTINCT asset_id) AS affected_hosts,
+    SUM(COUNT(DISTINCT vulnerability_id)) OVER (PARTITION BY environment) AS environment_total_vulns
+FROM findings
+GROUP BY environment, os_version, package_to_upgrade, fix_action
+ORDER BY environment, os_version, vuln_count DESC;
