@@ -1,21 +1,46 @@
 SELECT
-    COALESCE(ds.applies_to,
-        substring(dv.title FROM 'CVE-\d{4}-\d+:\s*([a-z0-9][a-zA-Z0-9\.\+\-_]{2,})'),
-        left(ds.summary, 80)) AS software,
-    string_agg(DISTINCT CASE
+    CASE
         WHEN da.host_name ILIKE '%prd%' AND da.host_name ILIKE '%jump%' THEN 'PROD JUMP'
         WHEN da.host_name ILIKE '%dev%' AND da.host_name ILIKE '%jump%' THEN 'DEV JUMP'
         WHEN da.host_name ILIKE '%prd%' THEN 'PROD'
         WHEN da.host_name ILIKE '%dev%' THEN 'DEV'
         WHEN da.host_name ILIKE '%lab%' THEN 'LAB'
         WHEN da.host_name ILIKE '%npr%' THEN 'NPR'
-        ELSE 'OTHER' END, ', ') AS environments,
-    string_agg(DISTINCT substring(dv.title FROM '(CVE-\d{4}-\d+)'), ', ') AS cves,
+        ELSE 'OTHER'
+    END AS environment,
+    COALESCE(
+        substring(dv.title FROM 'CVE-\d{4}-\d+:\s*([a-z0-9][a-zA-Z0-9\.\+\-_]{2,})'),
+        left(ds.summary, 80)
+    ) AS package_to_upgrade,
+    string_agg(DISTINCT dvc.category_name, ', ') AS categories,
+    left(proofAsText(ds.fix), 150) AS fix_action,
+    string_agg(DISTINCT CASE
+        WHEN dvr.reference ~* 'RHSA[-:]' THEN dvr.reference
+    END, ', ') AS errata,
+    string_agg(DISTINCT COALESCE(
+        substring(dv.title FROM '(CVE-\d{4}-\d+)'),
+        CASE WHEN dvr.reference ~* '^CVE-' THEN dvr.reference END
+    ), ', ') AS cves,
     COUNT(DISTINCT dv.vulnerability_id) AS vuln_count,
-    COUNT(DISTINCT da.asset_id) AS affected_hosts
+    COUNT(DISTINCT da.asset_id) AS affected_hosts,
+    SUM(COUNT(DISTINCT dv.vulnerability_id)) OVER (
+        PARTITION BY CASE
+            WHEN da.host_name ILIKE '%prd%' AND da.host_name ILIKE '%jump%' THEN 'PROD JUMP'
+            WHEN da.host_name ILIKE '%dev%' AND da.host_name ILIKE '%jump%' THEN 'DEV JUMP'
+            WHEN da.host_name ILIKE '%prd%' THEN 'PROD'
+            WHEN da.host_name ILIKE '%dev%' THEN 'DEV'
+            WHEN da.host_name ILIKE '%lab%' THEN 'LAB'
+            WHEN da.host_name ILIKE '%npr%' THEN 'NPR'
+            ELSE 'OTHER'
+        END
+    ) AS environment_total_vulns
 FROM dim_asset_vulnerability_best_solution davbs
 JOIN dim_vulnerability dv USING (vulnerability_id)
 JOIN dim_asset da ON davbs.asset_id = da.asset_id
 JOIN dim_solution ds USING (solution_id)
-GROUP BY software
-ORDER BY vuln_count DESC;
+LEFT JOIN dim_vulnerability_reference dvr
+     ON dv.vulnerability_id = dvr.vulnerability_id
+LEFT JOIN dim_vulnerability_category dvc
+     ON dv.vulnerability_id = dvc.vulnerability_id
+GROUP BY environment, package_to_upgrade, left(proofAsText(ds.fix), 150)
+ORDER BY environment, vuln_count DESC;
