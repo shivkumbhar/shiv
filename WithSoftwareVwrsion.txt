@@ -1,3 +1,16 @@
+WITH vuln_refs AS (
+    SELECT vulnerability_id,
+           string_agg(DISTINCT CASE WHEN reference ~* 'RHSA[-:]' THEN reference END, ', ') AS errata,
+           string_agg(DISTINCT CASE WHEN reference ~* '^CVE-' THEN reference END, ', ') AS ref_cves
+    FROM dim_vulnerability_reference
+    GROUP BY vulnerability_id
+),
+vuln_cats AS (
+    SELECT vulnerability_id,
+           string_agg(DISTINCT category_name, ', ') AS categories
+    FROM dim_vulnerability_category
+    GROUP BY vulnerability_id
+)
 SELECT
     CASE
         WHEN da.host_name ILIKE '%prd%' AND da.host_name ILIKE '%jump%' THEN 'PROD JUMP'
@@ -12,14 +25,11 @@ SELECT
         substring(dv.title FROM 'CVE-\d{4}-\d+:\s*([a-z0-9][a-zA-Z0-9\.\+\-_]{2,})'),
         left(ds.summary, 80)
     ) AS package_to_upgrade,
-    string_agg(DISTINCT dvc.category_name, ', ') AS categories,
+    string_agg(DISTINCT vc.categories, ' | ') AS categories,
     left(proofAsText(ds.fix), 150) AS fix_action,
-    string_agg(DISTINCT CASE
-        WHEN dvr.reference ~* 'RHSA[-:]' THEN dvr.reference
-    END, ', ') AS errata,
+    string_agg(DISTINCT vr.errata, ' | ') AS errata,
     string_agg(DISTINCT COALESCE(
-        substring(dv.title FROM '(CVE-\d{4}-\d+)'),
-        CASE WHEN dvr.reference ~* '^CVE-' THEN dvr.reference END
+        substring(dv.title FROM '(CVE-\d{4}-\d+)'), vr.ref_cves
     ), ', ') AS cves,
     COUNT(DISTINCT dv.vulnerability_id) AS vuln_count,
     COUNT(DISTINCT da.asset_id) AS affected_hosts,
@@ -38,9 +48,7 @@ FROM dim_asset_vulnerability_best_solution davbs
 JOIN dim_vulnerability dv USING (vulnerability_id)
 JOIN dim_asset da ON davbs.asset_id = da.asset_id
 JOIN dim_solution ds USING (solution_id)
-LEFT JOIN dim_vulnerability_reference dvr
-     ON dv.vulnerability_id = dvr.vulnerability_id
-LEFT JOIN dim_vulnerability_category dvc
-     ON dv.vulnerability_id = dvc.vulnerability_id
+LEFT JOIN vuln_refs vr ON dv.vulnerability_id = vr.vulnerability_id
+LEFT JOIN vuln_cats vc ON dv.vulnerability_id = vc.vulnerability_id
 GROUP BY environment, package_to_upgrade, left(proofAsText(ds.fix), 150)
 ORDER BY environment, vuln_count DESC;
