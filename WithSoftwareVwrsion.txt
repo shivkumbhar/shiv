@@ -1,14 +1,8 @@
-WITH vuln_refs AS (
-    SELECT vulnerability_id,
-           string_agg(DISTINCT CASE WHEN reference ~* 'RHSA[-:]' THEN reference END, ', ') AS errata,
-           string_agg(DISTINCT CASE WHEN reference ~* '^CVE-' THEN reference END, ', ') AS ref_cves
-    FROM dim_vulnerability_reference
-    GROUP BY vulnerability_id
-),
-vuln_cats AS (
+WITH vuln_cats AS (
     SELECT vulnerability_id,
            string_agg(DISTINCT category_name, ', ') AS categories
     FROM dim_vulnerability_category
+    WHERE category_name NOT IN ('Red Hat')     -- optional: drop the label every row would share
     GROUP BY vulnerability_id
 )
 SELECT
@@ -26,29 +20,14 @@ SELECT
         left(ds.summary, 80)
     ) AS package_to_upgrade,
     string_agg(DISTINCT vc.categories, ' | ') AS categories,
-    left(proofAsText(ds.fix), 150) AS fix_action,
-    string_agg(DISTINCT vr.errata, ' | ') AS errata,
-    string_agg(DISTINCT COALESCE(
-        substring(dv.title FROM '(CVE-\d{4}-\d+)'), vr.ref_cves
-    ), ', ') AS cves,
+    left(ds.summary, 100) AS fix_action,
+    string_agg(DISTINCT substring(dv.title FROM '(CVE-\d{4}-\d+)'), ', ') AS cves,
     COUNT(DISTINCT dv.vulnerability_id) AS vuln_count,
-    COUNT(DISTINCT da.asset_id) AS affected_hosts,
-    SUM(COUNT(DISTINCT dv.vulnerability_id)) OVER (
-        PARTITION BY CASE
-            WHEN da.host_name ILIKE '%prd%' AND da.host_name ILIKE '%jump%' THEN 'PROD JUMP'
-            WHEN da.host_name ILIKE '%dev%' AND da.host_name ILIKE '%jump%' THEN 'DEV JUMP'
-            WHEN da.host_name ILIKE '%prd%' THEN 'PROD'
-            WHEN da.host_name ILIKE '%dev%' THEN 'DEV'
-            WHEN da.host_name ILIKE '%lab%' THEN 'LAB'
-            WHEN da.host_name ILIKE '%npr%' THEN 'NPR'
-            ELSE 'OTHER'
-        END
-    ) AS environment_total_vulns
+    COUNT(DISTINCT da.asset_id) AS affected_hosts
 FROM dim_asset_vulnerability_best_solution davbs
 JOIN dim_vulnerability dv USING (vulnerability_id)
 JOIN dim_asset da ON davbs.asset_id = da.asset_id
 JOIN dim_solution ds USING (solution_id)
-LEFT JOIN vuln_refs vr ON dv.vulnerability_id = vr.vulnerability_id
 LEFT JOIN vuln_cats vc ON dv.vulnerability_id = vc.vulnerability_id
-GROUP BY environment, package_to_upgrade, left(proofAsText(ds.fix), 150)
+GROUP BY environment, package_to_upgrade, left(ds.summary, 100)
 ORDER BY environment, vuln_count DESC;
